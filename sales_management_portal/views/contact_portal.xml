@@ -1,0 +1,1609 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="contacts_list" name="Contacts List">
+        <t t-call="website.layout">
+            <t t-set="head">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+                <style>
+                    /* Enhanced Sidebar Design */
+                    .dashboard-sidebar {
+                        position: fixed;
+                        top: 70px;
+                        left: 0;
+                        height: calc(100vh - 70px);
+                        width: 280px;
+                        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                        border-right: none;
+                        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+                        z-index: 1000;
+                        padding-top: 20px;
+                        overflow-y: auto;
+                        transition: all 0.3s ease;
+                    }
+
+                    .dashboard-sidebar .sidebar-header {
+                        padding: 0 25px 20px;
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                        margin-bottom: 15px;
+                    }
+
+                    .dashboard-sidebar .sidebar-header h4 {
+                        color: white;
+                        font-weight: 600;
+                        margin: 0;
+                        font-size: 1.2rem;
+                    }
+
+                    .dashboard-sidebar .list-group-item {
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px 20px;
+                        margin: 4px 15px;
+                        font-weight: 500;
+                        color: rgba(255,255,255,0.9);
+                        background: transparent;
+                        transition: all 0.3s ease;
+                        border-left: 3px solid transparent;
+                    }
+
+                    .dashboard-sidebar .list-group-item:hover {
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        transform: translateX(5px);
+                    }
+
+                    .dashboard-sidebar .list-group-item.active {
+                        background: rgba(255,255,255,0.15);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    }
+
+                    .dashboard-sidebar .list-group-item i {
+                        width: 20px;
+                        text-align: center;
+                        margin-right: 12px;
+                        font-size: 1.1rem;
+                    }
+
+                    .dashboard-content {
+                        margin-left: 300px;
+                        padding: 30px;
+                        min-height: calc(100vh - 70px);
+                        background: #f8fafc;
+                    }
+
+                    /* Enhanced Card Design */
+                    .card {
+                        border: none;
+                        border-radius: 16px;
+                        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                        margin-bottom: 25px;
+                        overflow: hidden;
+                    }
+
+                    .card-header {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        padding: 20px 25px;
+                    }
+
+                    .card-header h2 {
+                        margin: 0;
+                        font-weight: 600;
+                        font-size: 1.5rem;
+                    }
+
+                    /* Enhanced Table Design */
+                    .table-responsive {
+                        border-radius: 12px;
+                        overflow: hidden;
+                    }
+
+                    .table {
+                        margin: 0;
+                    }
+
+                    .table thead th {
+                        background: #2c3e50;
+                        color: white;
+                        border: none;
+                        padding: 16px 12px;
+                        font-weight: 600;
+                        font-size: 0.9rem;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+
+                    .table tbody td {
+                        padding: 16px 12px;
+                        vertical-align: middle;
+                        border-color: #f1f3f4;
+                    }
+
+                    .table tbody tr {
+                        transition: all 0.3s ease;
+                    }
+
+                    .table tbody tr:hover {
+                        background: #f8f9fa;
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                    }
+
+                    /* Enhanced Badges */
+                    .badge {
+                        padding: 8px 12px;
+                        border-radius: 20px;
+                        font-weight: 500;
+                        font-size: 0.75rem;
+                    }
+
+                    .bg-primary {
+                        background: linear-gradient(45deg, #3498db, #2980b9) !important;
+                    }
+
+                    .bg-success {
+                        background: linear-gradient(45deg, #27ae60, #2ecc71) !important;
+                    }
+
+                    .bg-secondary {
+                        background: linear-gradient(45deg, #95a5a6, #7f8c8d) !important;
+                    }
+
+                    /* Enhanced Buttons */
+                    .btn-primary {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border: none;
+                        border-radius: 10px;
+                        padding: 12px 24px;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                    }
+
+                    .btn-primary:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                    }
+
+                    /* Contact Person Widget */
+                    .contact-person-widget {
+                        border: 1px solid #e9ecef;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-bottom: 20px;
+                        background: white;
+                        position: relative;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                        transition: all 0.3s ease;
+                    }
+
+                    .contact-person-widget:hover {
+                        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                    }
+
+                    .contact-person-widget .remove-btn {
+                        position: absolute;
+                        top: 15px;
+                        right: 15px;
+                        border-radius: 8px;
+                    }
+
+                    /* Wizard Modal */
+                    .contact-wizard {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.5);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 1050;
+                    }
+
+                    .wizard-content {
+                        background: white;
+                        border-radius: 16px;
+                        padding: 30px;
+                        max-width: 600px;
+                        width: 90%;
+                        max-height: 90vh;
+                        overflow-y: auto;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    }
+
+                    /* Form Enhancements */
+                    .form-control {
+                        border-radius: 10px;
+                        border: 2px solid #e9ecef;
+                        padding: 12px 16px;
+                        transition: all 0.3s ease;
+                    }
+
+                    .form-control:focus {
+                        border-color: #667eea;
+                        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+                    }
+
+                    .form-label {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin-bottom: 8px;
+                    }
+
+                    /* Section Headers */
+                    .section-header {
+                        color: #2c3e50;
+                        font-weight: 600;
+                        margin-bottom: 20px;
+                        padding-bottom: 12px;
+                        border-bottom: 2px solid #3498db;
+                    }
+                    .contact-person-card {
+                        border: 1px solid #e9ecef;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-bottom: 15px;
+                        background: white;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                        cursor: pointer;
+                    }
+                    .contact-person-card:hover {
+                        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                        transform: translateY(-2px);
+                        border-color: #3498db;
+                    }
+                    .form-control-plaintext {
+                        padding: 8px 0;
+                        border: none;
+                        background: transparent;
+                        min-height: auto;
+                    }
+                    .contact-view-content .section-header,
+                    .contact-person-view-content .section-header {
+                        color: #2c3e50;
+                        font-weight: 600;
+                        margin-bottom: 20px;
+                        padding-bottom: 12px;
+                        border-bottom: 2px solid #3498db;
+                    }
+                    .form-label.fw-bold {
+                        color: #2c3e50;
+                        margin-bottom: 8px;
+                    }
+
+                    @media (max-width: 1024px) {
+                        .dashboard-sidebar {
+                            width: 250px;
+                        }
+                        .dashboard-content {
+                            margin-left: 270px;
+                        }
+                    }
+
+                    @media (max-width: 768px) {
+                        .dashboard-sidebar {
+                            width: 100%;
+                            height: auto;
+                            position: relative;
+                            top: 0;
+                        }
+                        
+                        .dashboard-content {
+                            margin-left: 0;
+                            padding: 20px 15px;
+                        }
+                    }
+                </style>
+            </t>
+            
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Enhanced Sidebar -->
+                    <div class="dashboard-sidebar">
+                        <div class="sidebar-header">
+                            <h4>Sales Management</h4>
+                        </div>
+                        <div class="list-group" id="sidebarMenu">
+                            <!-- Dashboard - Always visible -->
+                            <a href="/sales_management" class="list-group-item list-group-item-action">
+                                <i class="fa fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                            
+                            <!-- Todo Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_todo_portal">
+                                <a href="/sales_management/todo" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-check-circle me-2"></i> Todo
+                                </a>
+                            </t>
+                            
+                            <!-- Contacts Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_contact_portal">
+                                <a href="/sales_management/contacts" class="list-group-item list-group-item-action active">
+                                    <i class="fa fa-users me-2"></i> Contacts
+                                </a>
+                            </t>
+                            
+                            <!-- Quotation Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_quotation_portal">
+                                <a href="/sales_management/quotation" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-file-invoice-dollar me-2"></i> Quotation
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Content -->
+                    <div class="dashboard-content col">
+                        <!-- Search Section -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <form method="get" action="/sales_management/contacts" class="row g-3 align-items-center">
+                                    <div class="col-md-8">
+                                        <input type="text" name="search" class="form-control" placeholder="Search by name, email, phone, city, state, country..." 
+                                            t-att-value="search_term or ''"/>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fa fa-search me-2"></i>Search
+                                        </button>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <a href="/sales_management/contacts" class="btn btn-outline-secondary w-100">
+                                            <i class="fa fa-refresh me-2"></i>Clear
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2 class="mb-1">Contacts</h2>
+                                <p class="text-muted mb-0">Manage your contacts and companies</p>
+                            </div>
+                            <a href="/sales_management/contacts/create" class="btn btn-primary">
+                                <i class="fa fa-plus me-2"></i>Create Contact
+                            </a>
+                        </div>
+
+                        <!-- Contacts Table -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="mb-0">All Contacts</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Phone</th>
+                                                <th>Tags</th>
+                                                <th>Country</th>
+                                                <th>Type</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="contacts" t-as="contact">
+                                                <tr>
+                                                    <td>
+                                                        <strong t-esc="contact.complete_name or contact.name"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-if="contact.email">
+                                                            <a t-att-href="'mailto:' + contact.email" t-esc="contact.email"/>
+                                                        </t>
+                                                        <t t-else="">-</t>
+                                                    </td>
+                                                    <td>
+                                                        <t t-if="contact.phone">
+                                                            <a t-att-href="'tel:' + contact.phone" t-esc="contact.phone"/>
+                                                        </t>
+                                                        <t t-else="">-</t>
+                                                    </td>
+                                                    <td>
+                                                        <t t-foreach="contact.category_id" t-as="tag">
+                                                            <span class="badge bg-secondary me-1 mb-1" t-esc="tag.name"/>
+                                                        </t>
+                                                        <t t-if="not contact.category_id">-</t>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="contact.country_id.name if contact.country_id else '-'"/>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge" t-att-class="'bg-primary' if contact.is_company else 'bg-success'">
+                                                            <t t-esc="'Company' if contact.is_company else 'Person'"/>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <button type="button" class="btn btn-sm btn-outline-primary view-contact-btn" 
+                                                                    t-att-data-contact-id="contact.id" title="View">
+                                                                <i class="fa fa-eye"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            <t t-if="not contacts">
+                                                <tr>
+                                                    <td colspan="7" class="text-center text-muted py-5">
+                                                        <i class="fa fa-users fa-3x mb-3 text-muted"></i>
+                                                        <p class="mb-2">No contacts found</p>
+                                                        <a href="/sales_management/contacts/create" class="btn btn-primary">
+                                                            Create your first contact
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact View Modal -->
+            <div class="modal fade" id="contactViewModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Contact Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="contactViewContent">
+                            <!-- Content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Person View Modal -->
+            <div class="modal fade" id="contactPersonViewModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-md">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Contact Person Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="contactPersonViewContent">
+                            <!-- Content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const menuItems = document.querySelectorAll("#sidebarMenu a");
+                    const currentPath = window.location.pathname;
+
+                    menuItems.forEach(item =&gt; {
+                        item.classList.remove("active");
+                        if (item.getAttribute("href") === currentPath) {
+                            item.classList.add("active");
+                        }
+                    });
+
+                    // Add event listeners for view buttons
+                    document.querySelectorAll('.view-contact-btn').forEach(button =&gt; {
+                        button.addEventListener('click', function() {
+                            const contactId = this.getAttribute('data-contact-id');
+                            viewContact(contactId);
+                        });
+                    });
+                });
+
+                function viewContact(contactId) {
+                    // Show loading state
+                    document.getElementById('contactViewContent').innerHTML = '&lt;div class="text-center p-4"&gt;&lt;div class="spinner-border" role="status"&gt;&lt;/div&gt;&lt;p class="mt-2"&gt;Loading contact details...&lt;/p&gt;&lt;/div&gt;';
+                    
+                    // Check if bootstrap is available
+                    if (typeof bootstrap !== 'undefined') {
+                        const modalElement = document.getElementById('contactViewModal');
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                    } else {
+                        // Fallback: show the modal directly
+                        document.getElementById('contactViewModal').style.display = 'block';
+                    }
+                    
+                    // Then load content
+                    fetch('/sales_management/contacts/view/' + contactId)
+                        .then(response =&gt; {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.text();
+                        })
+                        .then(html =&gt; {
+                            document.getElementById('contactViewContent').innerHTML = html;
+                            
+                            // Re-initialize event listeners for contact person cards after content is loaded
+                            setTimeout(() =&gt; {
+                                document.querySelectorAll('.contact-person-card').forEach(card =&gt; {
+                                    card.addEventListener('click', function() {
+                                        const personId = this.getAttribute('data-contact-id');
+                                        viewContactPerson(personId);
+                                    });
+                                });
+                            }, 100);
+                        })
+                        .catch(error =&gt; {
+                            console.error('Error loading contact:', error);
+                            document.getElementById('contactViewContent').innerHTML = 
+                                '&lt;div class="alert alert-danger"&gt;Error loading contact details. Please try again.&lt;/div&gt;';
+                        });
+                }
+
+                function viewContactPerson(contactId) {
+                    // Show loading state
+                    document.getElementById('contactPersonViewContent').innerHTML = '&lt;div class="text-center p-4"&gt;&lt;div class="spinner-border" role="status"&gt;&lt;/div&gt;&lt;p class="mt-2"&gt;Loading contact person details...&lt;/p&gt;&lt;/div&gt;';
+                    
+                    fetch('/sales_management/contacts/view-person/' + contactId)
+                        .then(response =&gt; {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.text();
+                        })
+                        .then(html =&gt; {
+                            document.getElementById('contactPersonViewContent').innerHTML = html;
+                            
+                            // Close the contact modal and open person modal
+                            if (typeof bootstrap !== 'undefined') {
+                                const contactModal = bootstrap.Modal.getInstance(document.getElementById('contactViewModal'));
+                                if (contactModal) {
+                                    contactModal.hide();
+                                }
+                                
+                                const personModal = new bootstrap.Modal(document.getElementById('contactPersonViewModal'));
+                                personModal.show();
+                            } else {
+                                // Fallback
+                                document.getElementById('contactViewModal').style.display = 'none';
+                                document.getElementById('contactPersonViewModal').style.display = 'block';
+                            }
+                        })
+                        .catch(error =&gt; {
+                            console.error('Error loading contact person:', error);
+                            document.getElementById('contactPersonViewContent').innerHTML = 
+                                '&lt;div class="alert alert-danger"&gt;Error loading contact person details. Please try again.&lt;/div&gt;';
+                        });
+                }
+
+                function closeContactModal() {
+                    if (typeof bootstrap !== 'undefined') {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('contactViewModal'));
+                        if (modal) modal.hide();
+                    } else {
+                        document.getElementById('contactViewModal').style.display = 'none';
+                    }
+                }
+
+                function closeContactPersonModal() {
+                    if (typeof bootstrap !== 'undefined') {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('contactPersonViewModal'));
+                        if (modal) modal.hide();
+                    } else {
+                        document.getElementById('contactPersonViewModal').style.display = 'none';
+                    }
+                }
+            </script>
+        </t>
+    </template>
+
+    <template id="contact_form" name="Contact Creation Form">
+        <t t-call="website.layout">
+            <t t-set="head">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+                <style>
+                    /* Your existing styles remain the same */
+                    .dashboard-sidebar {
+                        position: fixed;
+                        top: 70px;
+                        left: 0;
+                        height: calc(100vh - 70px);
+                        width: 280px;
+                        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                        border-right: none;
+                        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+                        z-index: 1000;
+                        padding-top: 20px;
+                        overflow-y: auto;
+                        transition: all 0.3s ease;
+                    }
+
+                    .dashboard-sidebar .sidebar-header {
+                        padding: 0 25px 20px;
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                        margin-bottom: 15px;
+                    }
+
+                    .dashboard-sidebar .sidebar-header h4 {
+                        color: white;
+                        font-weight: 600;
+                        margin: 0;
+                        font-size: 1.2rem;
+                    }
+
+                    .dashboard-sidebar .list-group-item {
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px 20px;
+                        margin: 4px 15px;
+                        font-weight: 500;
+                        color: rgba(255,255,255,0.9);
+                        background: transparent;
+                        transition: all 0.3s ease;
+                        border-left: 3px solid transparent;
+                    }
+
+                    .dashboard-sidebar .list-group-item:hover {
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        transform: translateX(5px);
+                    }
+
+                    .dashboard-sidebar .list-group-item.active {
+                        background: rgba(255,255,255,0.15);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    }
+
+                    .dashboard-sidebar .list-group-item i {
+                        width: 20px;
+                        text-align: center;
+                        margin-right: 12px;
+                        font-size: 1.1rem;
+                    }
+
+                    .dashboard-content {
+                        margin-left: 300px;
+                        padding: 30px;
+                        min-height: calc(100vh - 70px);
+                        background: #f8fafc;
+                    }
+
+                    .card {
+                        border: none;
+                        border-radius: 16px;
+                        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                        margin-bottom: 25px;
+                        overflow: hidden;
+                    }
+
+                    .card-header {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        padding: 20px 25px;
+                    }
+
+                    .contact-person-widget {
+                        border: 1px solid #e9ecef;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-bottom: 20px;
+                        background: white;
+                        position: relative;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                        transition: all 0.3s ease;
+                    }
+
+                    .contact-person-widget:hover {
+                        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                    }
+
+                    .contact-person-widget .remove-btn {
+                        position: absolute;
+                        top: 15px;
+                        right: 15px;
+                        border-radius: 8px;
+                    }
+
+                    .contact-wizard {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.5);
+                        display: none;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 1050;
+                    }
+
+                    .wizard-content {
+                        background: white;
+                        border-radius: 16px;
+                        padding: 30px;
+                        max-width: 600px;
+                        width: 90%;
+                        max-height: 90vh;
+                        overflow-y: auto;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    }
+
+                    .form-control {
+                        border-radius: 10px;
+                        border: 2px solid #e9ecef;
+                        padding: 12px 16px;
+                        transition: all 0.3s ease;
+                    }
+
+                    .form-control:focus {
+                        border-color: #667eea;
+                        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+                    }
+
+                    .form-label {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin-bottom: 8px;
+                    }
+
+                    .section-header {
+                        color: #2c3e50;
+                        font-weight: 600;
+                        margin-bottom: 20px;
+                        padding-bottom: 12px;
+                        border-bottom: 2px solid #3498db;
+                    }
+
+                    .btn-primary {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border: none;
+                        border-radius: 10px;
+                        padding: 12px 24px;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                    }
+
+                    .btn-primary:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                    }
+
+                    /* Success Message Styles */
+                    .success-message {
+                        background: linear-gradient(135deg, #27ae60, #2ecc71);
+                        color: white;
+                        padding: 15px 20px;
+                        border-radius: 10px;
+                        margin-bottom: 20px;
+                        text-align: center;
+                        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+                        display: none;
+                        position: fixed;
+                        top: 100px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        z-index: 9999;
+                        min-width: 300px;
+                    }
+
+                    .success-message i {
+                        margin-right: 10px;
+                    }
+
+                    @media (max-width: 768px) {
+                        .dashboard-sidebar {
+                            width: 100%;
+                            height: auto;
+                            position: relative;
+                            top: 0;
+                        }
+                        
+                        .dashboard-content {
+                            margin-left: 0;
+                            padding: 20px 15px;
+                        }
+                        
+                        .success-message {
+                            left: 20px;
+                            right: 20px;
+                            transform: none;
+                            min-width: auto;
+                        }
+                    }
+                </style>
+            </t>
+            
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Enhanced Sidebar -->
+                    <div class="dashboard-sidebar">
+                        <div class="sidebar-header">
+                            <h4>Sales Management</h4>
+                        </div>
+                        <div class="list-group" id="sidebarMenu">
+                            <!-- Dashboard - Always visible -->
+                            <a href="/sales_management" class="list-group-item list-group-item-action">
+                                <i class="fa fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                            
+                            <!-- Todo Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_todo_portal">
+                                <a href="/sales_management/todo" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-check-circle me-2"></i> Todo
+                                </a>
+                            </t>
+                            
+                            <!-- Contacts Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_contact_portal">
+                                <a href="/sales_management/contacts" class="list-group-item list-group-item-action active">
+                                    <i class="fa fa-users me-2"></i> Contacts
+                                </a>
+                            </t>
+                            
+                            <!-- Quotation Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_quotation_portal">
+                                <a href="/sales_management/quotation" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-file-invoice-dollar me-2"></i> Quotation
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="dashboard-content col">
+                        <!-- Success Message -->
+                        <div class="success-message" id="successMessage">
+                            <i class="fa fa-check-circle"></i>
+                            <strong>Contact Created Successfully</strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2 class="mb-1">Create Contact</h2>
+                                <p class="text-muted mb-0">Add a new contact or company to your portfolio</p>
+                            </div>
+                            <a href="/sales_management/contacts" class="btn btn-secondary">
+                                <i class="fa fa-arrow-left me-2"></i>Back to Contacts
+                            </a>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="mb-0">Contact Information</h2>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" action="/sales_management/contacts/submit" class="needs-validation" novalidate="novalidate" id="contactForm">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="redirect_to_list" value="true"/>
+
+                                    <!-- Company Type -->
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <label class="form-label">Contact Type *</label>
+                                            <div class="d-flex gap-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="company_type" id="person" value="person" checked="checked" onchange="toggleContactType()"/>
+                                                    <label class="form-check-label fw-bold" for="person">
+                                                        <i class="fa fa-user me-2"></i>Person
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="company_type" id="company" value="company" onchange="toggleContactType()"/>
+                                                    <label class="form-check-label fw-bold" for="company">
+                                                        <i class="fa fa-building me-2"></i>Company
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Basic Information -->
+                                    <div class="mb-4">
+                                        <h5 class="section-header">Basic Information</h5>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Name *</label>
+                                                <input type="text" class="form-control" name="name" required="required" placeholder="Enter full name or company name"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" class="form-control" name="email" placeholder="email@example.com"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Phone</label>
+                                                <input type="text" class="form-control" name="phone" placeholder="+1 (555) 123-4567"/>
+                                            </div>
+                                            <!-- Dynamic field that changes based on contact type -->
+                                            <div class="col-md-6" id="tags-field">
+                                                <label class="form-label">Tags</label>
+                                                <select class="form-control" name="category_id">
+                                                    <option value="">-- Select Tags --</option>
+                                                    <t t-foreach="tags" t-as="tag">
+                                                        <option t-att-value="tag.id" t-esc="tag.name"/>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                            <!-- Job Title field for person type (hidden by default) -->
+                                            <div class="col-md-6" id="job-title-field" style="display: none;">
+                                                <label class="form-label">Job Title</label>
+                                                <input type="text" class="form-control" name="function" placeholder="Job title"/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Company Information (for Person type) -->
+                                    <div class="mb-4" id="company-info-section">
+                                        <h5 class="section-header">Company Information</h5>
+                                        <div class="row mb-2">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Select Company</label>
+                                                <select class="form-control" name="company_id" id="company_select" onchange="loadCompanyAddress()">
+                                                    <option value="">-- Select Company --</option>
+                                                    <t t-foreach="companies" t-as="company">
+                                                        <option t-att-value="company.id" t-esc="company.name"/>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div id="new-company-fields" style="display: none;">
+                                            <div class="row mb-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">New Company Name</label>
+                                                    <input type="text" class="form-control" name="new_company_name" placeholder="Enter new company name"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Company Address Information -->
+                                    <div class="mb-4">
+                                        <h5 class="section-header">Company Address Information</h5>
+                                        <div class="row mb-2">
+                                            <div class="col-12">
+                                                <label class="form-label">Street</label>
+                                                <input type="text" class="form-control" name="street" placeholder="Street address"/>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-12">
+                                                <label class="form-label">Street 2</label>
+                                                <input type="text" class="form-control" name="street2" placeholder="Apartment, suite, unit, etc."/>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-md-4">
+                                                <label class="form-label">City</label>
+                                                <input type="text" class="form-control" name="city" placeholder="City"/>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">State</label>
+                                                <select class="form-control" name="state_id">
+                                                    <option value="">Select State</option>
+                                                    <t t-foreach="states" t-as="state">
+                                                        <option t-att-value="state.id" t-esc="state.name"/>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">ZIP</label>
+                                                <input type="text" class="form-control" name="zip" placeholder="ZIP code"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Country</label>
+                                                <select class="form-control" name="country_id">
+                                                    <option value="">Select Country</option>
+                                                    <t t-foreach="countries" t-as="country">
+                                                        <option t-att-value="country.id" t-esc="country.name"/>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Contact Persons Section (for Company type) -->
+                                    <div class="mb-4" id="contact-persons-section" style="display: none;">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="section-header mb-0">Contact Persons</h5>
+                                            <button type="button" class="btn btn-outline-primary" onclick="showContactWizard()">
+                                                <i class="fa fa-plus me-2"></i>Add Contact Person
+                                            </button>
+                                        </div>
+                                        <div id="contact-persons-container">
+                                            <!-- Contact persons will be added here via wizard -->
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex gap-3 pt-3 border-top">
+                                        <button type="button" class="btn btn-primary px-5" id="submitBtn">
+                                            <i class="fa fa-save me-2"></i>Create Contact
+                                        </button>
+                                        <a href="/sales_management/contacts" class="btn btn-outline-secondary px-4">Cancel</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Person Wizard Modal -->
+            <div class="contact-wizard" id="contactWizard">
+                <div class="wizard-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">Add Contact Person</h4>
+                        <button type="button" class="btn-close" onclick="hideContactWizard()"></button>
+                    </div>
+                    
+                    <form id="contactPersonForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Name *</label>
+                                <input type="text" class="form-control" id="wizard_name" required="required" placeholder="Contact person name"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="wizard_email" placeholder="email@example.com"/>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Phone</label>
+                                <input type="text" class="form-control" id="wizard_phone" placeholder="+1 (555) 123-4567"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Job Title</label>
+                                <input type="text" class="form-control" id="wizard_function" placeholder="Job title"/>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2 justify-content-end pt-3 border-top">
+                            <button type="button" class="btn btn-secondary" onclick="hideContactWizard()">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="addContactFromWizard()">Add Contact</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                function toggleContactType() {
+                    const companyType = document.querySelector('input[name="company_type"]:checked').value;
+                    const contactPersonsSection = document.getElementById('contact-persons-section');
+                    const companyInfoSection = document.getElementById('company-info-section');
+                    const tagsField = document.getElementById('tags-field');
+                    const jobTitleField = document.getElementById('job-title-field');
+                    
+                    if (companyType === 'company') {
+                        contactPersonsSection.style.display = 'block';
+                        companyInfoSection.style.display = 'none';
+                        tagsField.style.display = 'block';
+                        jobTitleField.style.display = 'none';
+                        // Clear company selection when switching to company type
+                        document.getElementById('company_select').value = '';
+                        document.getElementById('new-company-fields').style.display = 'none';
+                    } else {
+                        contactPersonsSection.style.display = 'none';
+                        companyInfoSection.style.display = 'block';
+                        tagsField.style.display = 'none';
+                        jobTitleField.style.display = 'block';
+                    }
+                }
+
+                function showContactWizard() {
+                    document.getElementById('contactWizard').style.display = 'flex';
+                    // Clear form
+                    document.getElementById('contactPersonForm').reset();
+                }
+
+                function hideContactWizard() {
+                    document.getElementById('contactWizard').style.display = 'none';
+                }
+
+                function addContactFromWizard() {
+                    const name = document.getElementById('wizard_name').value;
+                    const email = document.getElementById('wizard_email').value;
+                    const phone = document.getElementById('wizard_phone').value;
+                    const jobTitle = document.getElementById('wizard_function').value;
+                    
+                    if (!name) {
+                        alert('Please enter contact person name');
+                        return;
+                    }
+
+                    const container = document.getElementById('contact-persons-container');
+                    
+                    // Use DOM methods instead of template literals to avoid XML parsing issues
+                    const newContact = document.createElement('div');
+                    newContact.className = 'contact-person-widget';
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'btn btn-danger btn-sm remove-btn';
+                    removeBtn.innerHTML = '&lt;i class="fa fa-trash me-1"&gt;&lt;/i&gt;Remove';
+                    removeBtn.onclick = function() { this.parentElement.remove(); };
+                    
+                    const row1 = document.createElement('div');
+                    row1.className = 'row mb-2';
+                    
+                    const nameCol = document.createElement('div');
+                    nameCol.className = 'col-md-4';
+                    nameCol.innerHTML = '&lt;label class="form-label"&gt;Name&lt;/label&gt;';
+                    const nameInput = document.createElement('input');
+                    nameInput.type = 'text';
+                    nameInput.className = 'form-control';
+                    nameInput.name = 'child_name[]';
+                    nameInput.value = name;
+                    nameInput.readOnly = true;
+                    nameCol.appendChild(nameInput);
+                    
+                    const emailCol = document.createElement('div');
+                    emailCol.className = 'col-md-4';
+                    emailCol.innerHTML = '&lt;label class="form-label"&gt;Email&lt;/label&gt;';
+                    const emailInput = document.createElement('input');
+                    emailInput.type = 'email';
+                    emailInput.className = 'form-control';
+                    emailInput.name = 'child_email[]';
+                    emailInput.value = email;
+                    emailInput.readOnly = true;
+                    emailCol.appendChild(emailInput);
+                    
+                    const phoneCol = document.createElement('div');
+                    phoneCol.className = 'col-md-4';
+                    phoneCol.innerHTML = '&lt;label class="form-label"&gt;Phone&lt;/label&gt;';
+                    const phoneInput = document.createElement('input');
+                    phoneInput.type = 'text';
+                    phoneInput.className = 'form-control';
+                    phoneInput.name = 'child_phone[]';
+                    phoneInput.value = phone;
+                    phoneInput.readOnly = true;
+                    phoneCol.appendChild(phoneInput);
+                    
+                    row1.appendChild(nameCol);
+                    row1.appendChild(emailCol);
+                    row1.appendChild(phoneCol);
+                    
+                    const row2 = document.createElement('div');
+                    row2.className = 'row';
+                    
+                    const functionCol = document.createElement('div');
+                    functionCol.className = 'col-md-6';
+                    functionCol.innerHTML = '&lt;label class="form-label"&gt;Job Title&lt;/label&gt;';
+                    const functionInput = document.createElement('input');
+                    functionInput.type = 'text';
+                    functionInput.className = 'form-control';
+                    functionInput.name = 'child_function[]';
+                    functionInput.value = jobTitle;
+                    functionInput.readOnly = true;
+                    functionCol.appendChild(functionInput);
+                    
+                    row2.appendChild(functionCol);
+                    
+                    newContact.appendChild(removeBtn);
+                    newContact.appendChild(row1);
+                    newContact.appendChild(row2);
+                    
+                    container.appendChild(newContact);
+                    
+                    hideContactWizard();
+                }
+
+                function showSuccessMessage() {
+                    const successMessage = document.getElementById('successMessage');
+                    successMessage.style.display = 'block';
+                    
+                    // Auto hide after 3 seconds
+                    setTimeout(function() {
+                        successMessage.style.display = 'none';
+                    }, 3000);
+                }
+
+                function submitForm() {
+                    const form = document.getElementById('contactForm');
+                    const submitBtn = document.getElementById('submitBtn');
+                    const originalText = submitBtn.innerHTML;
+                    
+                    // Show loading state
+                    submitBtn.innerHTML = '&lt;i class="fa fa-spinner fa-spin me-2"&gt;&lt;/i&gt;Creating...';
+                    submitBtn.disabled = true;
+                    
+                    // Show success message immediately
+                    showSuccessMessage();
+                    
+                    // Submit form after a short delay to show the success message
+                    setTimeout(function() {
+                        // Create a temporary form for submission
+                        const tempForm = document.createElement('form');
+                        tempForm.method = 'POST';
+                        tempForm.action = '/sales_management/contacts/submit';
+                        tempForm.style.display = 'none';
+                        
+                        // Copy all form data
+                        const formData = new FormData(form);
+                        for (let [key, value] of formData.entries()) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = value;
+                            tempForm.appendChild(input);
+                        }
+                        
+                        // Add redirect parameter to ensure redirect happens
+                        const redirectInput = document.createElement('input');
+                        redirectInput.type = 'hidden';
+                        redirectInput.name = 'redirect_to_list';
+                        redirectInput.value = 'true';
+                        tempForm.appendChild(redirectInput);
+                        
+                        document.body.appendChild(tempForm);
+                        tempForm.submit();
+                    }, 1500); // Show success message for 1.5 seconds before redirect
+                }
+
+                document.addEventListener("DOMContentLoaded", function () {
+                    const submitBtn = document.getElementById('submitBtn');
+                    const menuItems = document.querySelectorAll("#sidebarMenu a");
+                    const currentPath = window.location.pathname;
+
+                    // Handle form submission
+                    submitBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        // Basic form validation
+                        const nameField = document.querySelector('input[name="name"]');
+                        if (!nameField.value.trim()) {
+                            alert('Please enter a name');
+                            nameField.focus();
+                            return;
+                        }
+                        
+                        submitForm();
+                    });
+
+                    // Initialize sidebar menu active state
+                    menuItems.forEach(function(item) {
+                        item.classList.remove("active");
+                        if (item.getAttribute("href") === currentPath) {
+                            item.classList.add("active");
+                        }
+                    });
+
+                    // Initialize contact type visibility
+                    toggleContactType();
+                });
+
+                // Close wizard when clicking outside
+                document.getElementById('contactWizard').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideContactWizard();
+                    }
+                });
+
+                function loadCompanyAddress() {
+                    const companySelect = document.getElementById('company_select');
+                    const companyId = companySelect.value;
+                    const newCompanyFields = document.getElementById('new-company-fields');
+                    
+                    if (companyId === 'new') {
+                        newCompanyFields.style.display = 'block';
+                        // Clear address fields when creating new company
+                        clearAddressFields();
+                    } else if (companyId) {
+                        newCompanyFields.style.display = 'none';
+                        // Load company address
+                        fetch('/sales_management/contacts/get-company-address', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('input[name="csrf_token"]').value
+                            },
+                            body: JSON.stringify({
+                                'company_id': companyId
+                            })
+                        })
+                        .then(function(response) { return response.json(); })
+                        .then(function(data) {
+                            if (data.street) document.querySelector('input[name="street"]').value = data.street;
+                            if (data.street2) document.querySelector('input[name="street2"]').value = data.street2;
+                            if (data.city) document.querySelector('input[name="city"]').value = data.city;
+                            if (data.zip) document.querySelector('input[name="zip"]').value = data.zip;
+                            if (data.state_id) document.querySelector('select[name="state_id"]').value = data.state_id;
+                            if (data.country_id) document.querySelector('select[name="country_id"]').value = data.country_id;
+                            
+                            // Set tags if available - only for person type
+                            const companyType = document.querySelector('input[name="company_type"]:checked').value;
+                            if (companyType === 'person' &amp;&amp; data.category_id &amp;&amp; data.category_id.length &gt; 0) {
+                                document.querySelector('select[name="category_id"]').value = data.category_id[0];
+                            }
+                        });
+                    } else {
+                        newCompanyFields.style.display = 'none';
+                        clearAddressFields();
+                    }
+                }
+
+                function clearAddressFields() {
+                    document.querySelector('input[name="street"]').value = '';
+                    document.querySelector('input[name="street2"]').value = '';
+                    document.querySelector('input[name="city"]').value = '';
+                    document.querySelector('input[name="zip"]').value = '';
+                    document.querySelector('select[name="state_id"]').value = '';
+                    document.querySelector('select[name="country_id"]').value = '';
+                }
+            </script>
+        </t>
+    </template>
+
+    <!-- Add Contact View Template -->
+    <template id="contact_view" name="Contact View">
+        <div class="contact-view-content">
+            <t t-if="contact">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="section-header">Basic Information</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Name</label>
+                            <p class="form-control-plaintext" t-esc="contact.name"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <p class="form-control-plaintext">
+                                <t t-if="contact.email">
+                                    <a t-att-href="'mailto:' + contact.email" t-esc="contact.email"/>
+                                </t>
+                                <t t-else="">N/A</t>
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Phone</label>
+                            <p class="form-control-plaintext">
+                                <t t-if="contact.phone">
+                                    <a t-att-href="'tel:' + contact.phone" t-esc="contact.phone"/>
+                                </t>
+                                <t t-else="">N/A</t>
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Type</label>
+                            <p class="form-control-plaintext">
+                                <span class="badge" t-att-class="'bg-primary' if contact.is_company else 'bg-success'">
+                                    <t t-esc="'Company' if contact.is_company else 'Person'"/>
+                                </span>
+                            </p>
+                        </div>
+                        <t t-if="contact.parent_id">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Company</label>
+                                <p class="form-control-plaintext" t-esc="contact.parent_id.name"/>
+                            </div>
+                        </t>
+                        <t t-if="contact.function">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Job Title</label>
+                                <p class="form-control-plaintext" t-esc="contact.function"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="section-header">Company Address</h5>
+                        <t t-if="contact.street or contact.street2 or contact.city or contact.state_id or contact.zip or contact.country_id">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Street</label>
+                                <p class="form-control-plaintext" t-esc="contact.street or 'N/A'"/>
+                            </div>
+                            <t t-if="contact.street2">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Street 2</label>
+                                    <p class="form-control-plaintext" t-esc="contact.street2"/>
+                                </div>
+                            </t>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">City</label>
+                                <p class="form-control-plaintext" t-esc="contact.city or 'N/A'"/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">State</label>
+                                <p class="form-control-plaintext" t-esc="contact.state_id.name if contact.state_id else 'N/A'"/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">ZIP</label>
+                                <p class="form-control-plaintext" t-esc="contact.zip or 'N/A'"/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Country</label>
+                                <p class="form-control-plaintext" t-esc="contact.country_id.name if contact.country_id else 'N/A'"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <p class="text-muted">No address information</p>
+                        </t>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5 class="section-header">Tags</h5>
+                        <t t-if="contact.category_id">
+                            <div class="d-flex flex-wrap gap-2">
+                                <t t-foreach="contact.category_id" t-as="tag">
+                                    <span class="badge bg-secondary" t-esc="tag.name"/>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <p class="text-muted">No tags assigned</p>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Contact Persons Section for Companies -->
+                <t t-if="contact.is_company and child_contacts">
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5 class="section-header">Contact Persons</h5>
+                            <div class="row">
+                                <t t-foreach="child_contacts" t-as="child">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="contact-person-card" t-att-data-contact-id="child.id">
+                                            <div class="d-flex align-items-start">
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-2" t-esc="child.name"/>
+                                                    <t t-if="child.function">
+                                                        <p class="text-muted mb-1">
+                                                            <i class="fa fa-briefcase me-2"></i>
+                                                            <span t-esc="child.function"/>
+                                                        </p>
+                                                    </t>
+                                                    <t t-if="child.email">
+                                                        <p class="text-muted mb-1">
+                                                            <i class="fa fa-envelope me-2"></i>
+                                                            <span t-esc="child.email"/>
+                                                        </p>
+                                                    </t>
+                                                    <t t-if="child.phone">
+                                                        <p class="text-muted mb-0">
+                                                            <i class="fa fa-phone me-2"></i>
+                                                            <span t-esc="child.phone"/>
+                                                        </p>
+                                                    </t>
+                                                </div>
+                                                <div class="ms-3">
+                                                    <i class="fa fa-chevron-right text-muted"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+            <t t-else="">
+                <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle me-2"></i>
+                    Contact not found or you don't have permission to view this contact.
+                </div>
+            </t>
+        </div>
+    </template>
+
+    <template id="contact_person_view" name="Contact Person View">
+        <div class="contact-person-view-content">
+            <t t-if="contact">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="section-header mb-3">Personal Information</h6>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Name</label>
+                            <p class="form-control-plaintext" t-esc="contact.name"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <p class="form-control-plaintext">
+                                <t t-if="contact.email">
+                                    <a t-att-href="'mailto:' + contact.email" t-esc="contact.email"/>
+                                </t>
+                                <t t-else="">N/A</t>
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Phone</label>
+                            <p class="form-control-plaintext">
+                                <t t-if="contact.phone">
+                                    <a t-att-href="'tel:' + contact.phone" t-esc="contact.phone"/>
+                                </t>
+                                <t t-else="">N/A</t>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="section-header mb-3">Professional Information</h6>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Job Title</label>
+                            <p class="form-control-plaintext" t-esc="contact.function or 'N/A'"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Company</label>
+                            <p class="form-control-plaintext" t-esc="contact.parent_id.name or 'N/A'"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6 class="section-header mb-3">Company Address Information</h6>
+                        <t t-if="contact.street or contact.street2 or contact.city or contact.state_id or contact.zip or contact.country_id">
+                            <div class="row">
+                                <t t-if="contact.street">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label fw-bold">Street</label>
+                                        <p class="form-control-plaintext" t-esc="contact.street"/>
+                                    </div>
+                                </t>
+                                <t t-if="contact.street2">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label fw-bold">Street 2</label>
+                                        <p class="form-control-plaintext" t-esc="contact.street2"/>
+                                    </div>
+                                </t>
+                                <t t-if="contact.city">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label fw-bold">City</label>
+                                        <p class="form-control-plaintext" t-esc="contact.city"/>
+                                    </div>
+                                </t>
+                                <t t-if="contact.state_id">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label fw-bold">State</label>
+                                        <p class="form-control-plaintext" t-esc="contact.state_id.name"/>
+                                    </div>
+                                </t>
+                                <t t-if="contact.zip">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label fw-bold">ZIP</label>
+                                        <p class="form-control-plaintext" t-esc="contact.zip"/>
+                                    </div>
+                                </t>
+                                <t t-if="contact.country_id">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label fw-bold">Country</label>
+                                        <p class="form-control-plaintext" t-esc="contact.country_id.name"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <p class="text-muted">No address information available</p>
+                        </t>
+                    </div>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle me-2"></i>
+                    Contact person not found or you don't have permission to view this contact.
+                </div>
+            </t>
+        </div>
+    </template>
+
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_security" model="ir.ui.view">
+        <field name="name">res.users.form.security</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='access_rights']" position="inside">
+                <group string="Portal Access Rights" name="portal_access_rights">
+                    <field name="use_contact_portal"/>
+                    <field name="use_todo_portal"/>
+                    <field name="use_quotation_portal"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

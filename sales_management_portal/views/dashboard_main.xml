@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="dashboard_main" name="Dashboard">
+        <t t-call="website.layout">
+            <t t-set="user_has_contact_portal" t-value="request.env.user.use_contact_portal"/>
+            <t t-set="user_has_todo_portal" t-value="request.env.user.use_todo_portal"/>
+            <t t-set="user_has_quotation_portal" t-value="request.env.user.use_quotation_portal"/>
+            
+            <style>
+                /* Your existing CSS remains the same */
+                .dashboard-sidebar {
+                    position: fixed;
+                    top: 70px;
+                    left: 0;
+                    height: calc(100vh - 70px);
+                    width: 280px;
+                    background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                    border-right: none;
+                    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+                    z-index: 1000;
+                    padding-top: 20px;
+                    overflow-y: auto;
+                    transition: all 0.3s ease;
+                }
+
+                .dashboard-sidebar .sidebar-header {
+                    padding: 0 25px 20px;
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                    margin-bottom: 15px;
+                }
+
+                .dashboard-sidebar .sidebar-header h4 {
+                    color: white;
+                    font-weight: 600;
+                    margin: 0;
+                    font-size: 1.2rem;
+                }
+
+                .dashboard-sidebar .list-group-item {
+                    border: none;
+                    border-radius: 12px;
+                    padding: 16px 20px;
+                    margin: 4px 15px;
+                    font-weight: 500;
+                    color: rgba(255,255,255,0.9);
+                    background: transparent;
+                    transition: all 0.3s ease;
+                    border-left: 3px solid transparent;
+                }
+
+                .dashboard-sidebar .list-group-item:hover {
+                    background: rgba(255,255,255,0.1);
+                    color: white;
+                    border-left-color: #e74c3c;
+                    transform: translateX(5px);
+                }
+
+                .dashboard-sidebar .list-group-item.active {
+                    background: rgba(255,255,255,0.15);
+                    color: white;
+                    border-left-color: #e74c3c;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                }
+
+                .dashboard-sidebar .list-group-item i {
+                    width: 20px;
+                    text-align: center;
+                    margin-right: 12px;
+                    font-size: 1.1rem;
+                }
+
+                .dashboard-content {
+                    margin-left: 300px;
+                    padding: 30px;
+                    min-height: calc(100vh - 70px);
+                    background: #f8fafc;
+                }
+
+                /* Enhanced Card Design */
+                .card {
+                    border: none;
+                    border-radius: 16px;
+                    box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                    margin-bottom: 25px;
+                    overflow: hidden;
+                }
+
+                .card-header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    padding: 20px 25px;
+                }
+
+                .card-header h2 {
+                    margin: 0;
+                    font-weight: 600;
+                    font-size: 1.5rem;
+                }
+
+                /* Stats Cards */
+                .stats-card {
+                    background: white;
+                    border-radius: 16px;
+                    padding: 25px;
+                    box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                    text-align: center;
+                    transition: all 0.3s ease;
+                    border: 1px solid #f1f3f4;
+                }
+
+                .stats-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+                }
+
+                .stats-card .stats-number {
+                    font-size: 2.5rem;
+                    font-weight: 700;
+                    color: #2c3e50;
+                    margin-bottom: 10px;
+                }
+
+                .stats-card .stats-label {
+                    font-size: 1rem;
+                    color: #7f8c8d;
+                    font-weight: 500;
+                }
+
+                .stats-card .stats-icon {
+                    font-size: 2rem;
+                    margin-bottom: 15px;
+                    opacity: 0.8;
+                }
+
+                /* Enhanced Buttons */
+                .btn-primary {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border: none;
+                    border-radius: 10px;
+                    padding: 12px 24px;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                }
+
+                .btn-primary:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                }
+
+                @media (max-width: 1024px) {
+                    .dashboard-sidebar {
+                        width: 250px;
+                    }
+                    .dashboard-content {
+                        margin-left: 270px;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    .dashboard-sidebar {
+                        width: 100%;
+                        height: auto;
+                        position: relative;
+                        top: 0;
+                    }
+                    
+                    .dashboard-content {
+                        margin-left: 0;
+                        padding: 20px 15px;
+                    }
+                }
+            </style>
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Enhanced Sidebar -->
+                    <div class="dashboard-sidebar">
+                        <div class="sidebar-header">
+                            <h4>Sales Management</h4>
+                        </div>
+                        <div class="list-group" id="sidebarMenu">
+                            <!-- Dashboard - Always visible -->
+                            <a href="/sales_management" class="list-group-item list-group-item-action active">
+                                <i class="fa fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                            
+                            <!-- Todo Portal - Conditionally visible -->
+                            <t t-if="user_has_todo_portal">
+                                <a href="/sales_management/todo" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-check-circle me-2"></i> Todo
+                                </a>
+                            </t>
+                            
+                            <!-- Contacts Portal - Conditionally visible -->
+                            <t t-if="user_has_contact_portal">
+                                <a href="/sales_management/contacts" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-users me-2"></i> Contacts
+                                </a>
+                            </t>
+                            
+                            <!-- Quotation Portal - Conditionally visible -->
+                            <t t-if="user_has_quotation_portal">
+                                <a href="/sales_management/quotation" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-file-invoice-dollar me-2"></i> Quotation
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="dashboard-content col">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2 class="mb-1">Sales Dashboard</h2>
+                                <p class="text-muted mb-0">Welcome to your sales management portal</p>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-primary">
+                                    <i class="fa fa-plus me-2"></i>Quick Action
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Stats Overview -->
+                        <div class="row mb-5">
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="stats-card">
+                                    <div class="stats-icon text-primary">
+                                        <i class="fa fa-users"></i>
+                                    </div>
+                                    <div class="stats-number">124</div>
+                                    <div class="stats-label">Total Contacts</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="stats-card">
+                                    <div class="stats-icon text-success">
+                                        <i class="fa fa-chart-line"></i>
+                                    </div>
+                                    <div class="stats-number">42</div>
+                                    <div class="stats-label">Active Leads</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="stats-card">
+                                    <div class="stats-icon text-warning">
+                                        <i class="fa fa-file-invoice-dollar"></i>
+                                    </div>
+                                    <div class="stats-number">18</div>
+                                    <div class="stats-label">Open Quotes</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="stats-card">
+                                    <div class="stats-icon text-info">
+                                        <i class="fa fa-tasks"></i>
+                                    </div>
+                                    <div class="stats-number">7</div>
+                                    <div class="stats-label">Pending Tasks</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions - Dynamic based on permissions -->
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h2 class="mb-0">Quick Actions</h2>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <!-- Contact Action - Only show if user has contact portal access -->
+                                            <t t-if="user_has_contact_portal">
+                                                <div class="col-md-6 mb-3">
+                                                    <a href="/sales_management/contacts/create" class="btn btn-outline-primary w-100 py-3">
+                                                        <i class="fa fa-user-plus fa-2x mb-2"></i>
+                                                        <br/>
+                                                        Add New Contact
+                                                    </a>
+                                                </div>
+                                            </t>
+                                            
+                                            <!-- Quotation Action - Only show if user has quotation portal access -->
+                                            <t t-if="user_has_quotation_portal">
+                                                <div class="col-md-6 mb-3">
+                                                    <a href="/sales_management/quotation" class="btn btn-outline-warning w-100 py-3">
+                                                        <i class="fa fa-file-alt fa-2x mb-2"></i>
+                                                        <br/>
+                                                        New Quotation
+                                                    </a>
+                                                </div>
+                                            </t>
+                                            
+                                            <!-- Todo Action - Only show if user has todo portal access -->
+                                            <t t-if="user_has_todo_portal">
+                                                <div class="col-md-6 mb-3">
+                                                    <a href="/sales_management/todo" class="btn btn-outline-info w-100 py-3">
+                                                        <i class="fa fa-tasks fa-2x mb-2"></i>
+                                                        <br/>
+                                                        Add Task
+                                                    </a>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h2 class="mb-0">Recent Activity</h2>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="activity-list">
+                                            <div class="activity-item mb-3 pb-3 border-bottom">
+                                                <div class="d-flex">
+                                                    <div class="activity-icon bg-primary rounded-circle p-2 me-3">
+                                                        <i class="fa fa-user-plus text-white"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="mb-1"><strong>New contact added</strong></p>
+                                                        <small class="text-muted">John Doe - 2 hours ago</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="activity-item mb-3 pb-3 border-bottom">
+                                                <div class="d-flex">
+                                                    <div class="activity-icon bg-success rounded-circle p-2 me-3">
+                                                        <i class="fa fa-chart-line text-white"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="mb-1"><strong>Lead converted</strong></p>
+                                                        <small class="text-muted">ABC Corporation - 5 hours ago</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="activity-item">
+                                                <div class="d-flex">
+                                                    <div class="activity-icon bg-warning rounded-circle p-2 me-3">
+                                                        <i class="fa fa-file-invoice text-white"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="mb-1"><strong>Quotation sent</strong></p>
+                                                        <small class="text-muted">XYZ Ltd - Yesterday</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const menuItems = document.querySelectorAll("#sidebarMenu a");
+                    const currentPath = window.location.pathname;
+
+                    menuItems.forEach(item => {
+                        item.classList.remove("active");
+                        if (item.getAttribute("href") === currentPath) {
+                            item.classList.add("active");
+                        }
+                    });
+                });
+            </script>
+        </t>
+    </template>
+
+</odoo>
