@@ -3,208 +3,678 @@
 
     <template id="quotation_portal" name="Quotation Portal">
         <t t-call="website.layout">
-            <style>
-                /* Enhanced Sidebar Design */
-                .dashboard-sidebar {
-                    position: fixed;
-                    top: 70px;
-                    left: 0;
-                    height: calc(100vh - 70px);
-                    width: 280px;
-                    background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                    border-right: none;
-                    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
-                    z-index: 1000;
-                    padding-top: 20px;
-                    overflow-y: auto;
-                    transition: all 0.3s ease;
-                }
-
-                .dashboard-sidebar .sidebar-header {
-                    padding: 0 25px 20px;
-                    border-bottom: 1px solid rgba(255,255,255,0.1);
-                    margin-bottom: 15px;
-                }
-
-                .dashboard-sidebar .sidebar-header h4 {
-                    color: white;
-                    font-weight: 600;
-                    margin: 0;
-                    font-size: 1.2rem;
-                }
-
-                .dashboard-sidebar .list-group-item {
-                    border: none;
-                    border-radius: 12px;
-                    padding: 16px 20px;
-                    margin: 4px 15px;
-                    font-weight: 500;
-                    color: rgba(255,255,255,0.9);
-                    background: transparent;
-                    transition: all 0.3s ease;
-                    border-left: 3px solid transparent;
-                }
-
-                .dashboard-sidebar .list-group-item:hover {
-                    background: rgba(255,255,255,0.1);
-                    color: white;
-                    border-left-color: #e74c3c;
-                    transform: translateX(5px);
-                }
-
-                .dashboard-sidebar .list-group-item.active {
-                    background: rgba(255,255,255,0.15);
-                    color: white;
-                    border-left-color: #e74c3c;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                }
-
-                .dashboard-sidebar .list-group-item i {
-                    width: 20px;
-                    text-align: center;
-                    margin-right: 12px;
-                    font-size: 1.1rem;
-                }
-
-                .dashboard-content {
-                    margin-left: 300px;
-                    padding: 30px;
-                    min-height: calc(100vh - 70px);
-                    background: #f8fafc;
-                }
-
-                /* Enhanced Card Design */
-                .card {
-                    border: none;
-                    border-radius: 16px;
-                    box-shadow: 0 4px 25px rgba(0,0,0,0.08);
-                    margin-bottom: 25px;
-                    overflow: hidden;
-                }
-
-                .card-header {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    padding: 20px 25px;
-                }
-
-                .card-header h2 {
-                    margin: 0;
-                    font-weight: 600;
-                    font-size: 1.5rem;
-                }
-
-                /* Quotation Stats */
-                .quote-stats-card {
-                    background: white;
-                    border-radius: 16px;
-                    padding: 25px;
-                    box-shadow: 0 4px 25px rgba(0,0,0,0.08);
-                    text-align: center;
-                    transition: all 0.3s ease;
-                    border: 1px solid #f1f3f4;
-                }
-
-                .quote-stats-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-                }
-
-                .quote-stats-card .stats-number {
-                    font-size: 2rem;
-                    font-weight: 700;
-                    color: #2c3e50;
-                    margin-bottom: 5px;
-                }
-
-                .quote-stats-card .stats-label {
-                    font-size: 0.9rem;
-                    color: #7f8c8d;
-                    font-weight: 500;
-                }
-
-                /* Quotation Items */
-                .quote-item {
-                    border: 1px solid #e9ecef;
-                    border-radius: 12px;
-                    padding: 20px;
-                    margin-bottom: 15px;
-                    background: white;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-                }
-
-                .quote-item:hover {
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-                    transform: translateY(-2px);
-                }
-
-                .quote-status {
-                    padding: 6px 12px;
-                    border-radius: 20px;
-                    font-size: 0.75rem;
-                    font-weight: 600;
-                }
-
-                .status-draft {
-                    background: #fff3cd;
-                    color: #856404;
-                }
-
-                .status-sent {
-                    background: #e3f2fd;
-                    color: #1976d2;
-                }
-
-                .status-accepted {
-                    background: #e8f5e8;
-                    color: #2e7d32;
-                }
-
-                .status-expired {
-                    background: #f5e6e8;
-                    color: #c2185b;
-                }
-
-                /* Enhanced Buttons */
-                .btn-primary {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    border: none;
-                    border-radius: 10px;
-                    padding: 12px 24px;
-                    font-weight: 600;
-                    transition: all 0.3s ease;
-                }
-
-                .btn-primary:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-                }
-
-                @media (max-width: 1024px) {
+            <t t-set="head">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+                <style>
+                    /* Enhanced Sidebar Design */
                     .dashboard-sidebar {
-                        width: 250px;
+                        position: fixed;
+                        top: 70px;
+                        left: 0;
+                        height: calc(100vh - 70px);
+                        width: 280px;
+                        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                        border-right: none;
+                        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+                        z-index: 1000;
+                        padding-top: 20px;
+                        overflow-y: auto;
+                        transition: all 0.3s ease;
                     }
+
+                    .dashboard-sidebar .sidebar-header {
+                        padding: 0 25px 20px;
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                        margin-bottom: 15px;
+                    }
+
+                    .dashboard-sidebar .sidebar-header h4 {
+                        color: white;
+                        font-weight: 600;
+                        margin: 0;
+                        font-size: 1.2rem;
+                    }
+
+                    .dashboard-sidebar .list-group-item {
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px 20px;
+                        margin: 4px 15px;
+                        font-weight: 500;
+                        color: rgba(255,255,255,0.9);
+                        background: transparent;
+                        transition: all 0.3s ease;
+                        border-left: 3px solid transparent;
+                    }
+
+                    .dashboard-sidebar .list-group-item:hover {
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        transform: translateX(5px);
+                    }
+
+                    .dashboard-sidebar .list-group-item.active {
+                        background: rgba(255,255,255,0.15);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    }
+
+                    .dashboard-sidebar .list-group-item i {
+                        width: 20px;
+                        text-align: center;
+                        margin-right: 12px;
+                        font-size: 1.1rem;
+                    }
+
                     .dashboard-content {
-                        margin-left: 270px;
+                        margin-left: 300px;
+                        padding: 30px;
+                        min-height: calc(100vh - 70px);
+                        background: #f8fafc;
                     }
-                }
 
-                @media (max-width: 768px) {
-                    .dashboard-sidebar {
-                        width: 100%;
-                        height: auto;
+                    /* Enhanced Card Design */
+                    .card {
+                        border: none;
+                        border-radius: 16px;
+                        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                        margin-bottom: 25px;
+                        overflow: hidden;
+                    }
+
+                    .card-header {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        padding: 20px 25px;
+                    }
+
+                    .card-header h2 {
+                        margin: 0;
+                        font-weight: 600;
+                        font-size: 1.5rem;
+                    }
+
+                    /* Quotation Stats */
+                    .quote-stats-card {
+                        background: white;
+                        border-radius: 16px;
+                        padding: 25px;
+                        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                        text-align: center;
+                        transition: all 0.3s ease;
+                        border: 1px solid #f1f3f4;
+                    }
+
+                    .quote-stats-card:hover {
+                        transform: translateY(-5px);
+                        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+                    }
+
+                    .quote-stats-card .stats-number {
+                        font-size: 2rem;
+                        font-weight: 700;
+                        color: #2c3e50;
+                        margin-bottom: 5px;
+                    }
+
+                    .quote-stats-card .stats-label {
+                        font-size: 0.9rem;
+                        color: #7f8c8d;
+                        font-weight: 500;
+                    }
+
+                    /* Quotation Items */
+                    .quote-item {
+                        border: 1px solid #e9ecef;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-bottom: 15px;
+                        background: white;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                    }
+
+                    .quote-item:hover {
+                        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                        transform: translateY(-2px);
+                    }
+
+                    .quote-status {
+                        padding: 6px 12px;
+                        border-radius: 20px;
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                    }
+
+                    .status-draft {
+                        background: #fff3cd;
+                        color: #856404;
+                    }
+
+                    .status-sent {
+                        background: #e3f2fd;
+                        color: #1976d2;
+                    }
+
+                    .status-confirmed {
+                        background: #e8f5e8;
+                        color: #2e7d32;
+                    }
+
+                    .status-done {
+                        background: #e8f5e8;
+                        color: #2e7d32;
+                    }
+
+                    .status-cancel {
+                        background: #f5e6e8;
+                        color: #c2185b;
+                    }
+
+                    /* Enhanced Buttons */
+                    .btn-primary {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border: none;
+                        border-radius: 10px;
+                        padding: 12px 24px;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                    }
+
+                    .btn-primary:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                    }
+
+                    /* Order Line Items */
+                    .order-line-item {
+                        border: 1px solid #e9ecef;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-bottom: 15px;
+                        background: white;
                         position: relative;
-                        top: 0;
+                    }
+
+                    .order-line-item .remove-btn {
+                        top: 15px;
+                        right: 15px;
+                        border-radius: 8px;
+                    }
+
+                    /* Form Enhancements */
+                    .form-control {
+                        border-radius: 10px;
+                        border: 2px solid #e9ecef;
+                        padding: 12px 16px;
+                        transition: all 0.3s ease;
+                    }
+
+                    .form-control:focus {
+                        border-color: #667eea;
+                        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+                    }
+
+                    .form-label {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin-bottom: 8px;
+                    }
+
+                    .section-header {
+                        color: #2c3e50;
+                        font-weight: 600;
+                        margin-bottom: 20px;
+                        padding-bottom: 12px;
+                        border-bottom: 2px solid #3498db;
+                    }
+
+                    /* Success Message */
+                    .success-message {
+                        background: linear-gradient(135deg, #27ae60, #2ecc71);
+                        color: white;
+                        padding: 15px 20px;
+                        border-radius: 10px;
+                        margin-bottom: 20px;
+                        text-align: center;
+                        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+                    }
+
+                    /* Search Dropdown Styles */
+                    .search-dropdown-container {
+                        position: relative;
+                    }
+
+                    .search-suggestions {
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        right: 0;
+                        background: white;
+                        max-height: 300px;
+                        overflow-y: auto;
+                        z-index: 1060;
+                        border: 1px solid #dee2e6;
+                        border-radius: 0.375rem;
+                        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+                        display: none;
+                    }
+
+                    .search-suggestions .list-group-item {
+                        border: none;
+                        border-bottom: 1px solid #f8f9fa;
+                        padding: 12px 16px;
+                        cursor: pointer;
+                    }
+
+                    .search-suggestions .list-group-item:hover {
+                        background-color: #f8f9fa;
+                    }
+
+                    .search-suggestions .list-group-item:last-child {
+                        border-bottom: none;
+                    }
+
+                    .search-dropdown-input {
+                        border-radius: 0.375rem !important;
+                    }
+
+                    .clear-search-btn {
+                        border-radius: 0 0.375rem 0.375rem 0 !important;
+                    }
+
+                    @media (max-width: 1024px) {
+                        .dashboard-sidebar {
+                            width: 250px;
+                        }
+                        .dashboard-content {
+                            margin-left: 270px;
+                        }
+                    }
+
+                    @media (max-width: 768px) {
+                        .dashboard-sidebar {
+                            width: 100%;
+                            height: auto;
+                            position: relative;
+                            top: 0;
+                        }
+                        
+                        .dashboard-content {
+                            margin-left: 0;
+                            padding: 20px 15px;
+                        }
+                    }
+                </style>
+            </t>
+            
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Enhanced Sidebar -->
+                    <div class="dashboard-sidebar">
+                        <div class="sidebar-header">
+                            <h4>Sales Management</h4>
+                        </div>
+                        <div class="list-group" id="sidebarMenu">
+                            <!-- Dashboard - Always visible -->
+                            <a href="/sales_management" class="list-group-item list-group-item-action">
+                                <i class="fa fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                            
+                            <!-- Todo Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_todo_portal">
+                                <a href="/sales_management/todo" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-check-circle me-2"></i> Todo
+                                </a>
+                            </t>
+                            
+                            <!-- Contacts Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_contact_portal">
+                                <a href="/sales_management/contacts" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-users me-2"></i> Contacts
+                                </a>
+                            </t>
+                            
+                            <!-- Quotation Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_quotation_portal">
+                                <a href="/sales_management/quotation" class="list-group-item list-group-item-action active">
+                                    <i class="fa fa-file-invoice-dollar me-2"></i> Quotation
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="dashboard-content col">
+                        <!-- Success Message -->
+                        <t t-if="request.params.get('success')">
+                            <div class="success-message">
+                                <i class="fa fa-check-circle me-2"></i>
+                                <strong>Quotation created successfully!</strong>
+                            </div>
+                        </t>
+
+                        <!-- Search and Filter Section -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <form method="get" action="/sales_management/quotation" class="row g-3 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Search</label>
+                                        <input type="text" name="search" class="form-control" placeholder="Search by order number, customer, status..." 
+                                            t-att-value="search_term or ''"/>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Date From</label>
+                                        <input type="date" name="date_from" class="form-control" t-att-value="date_from or ''"/>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Date To</label>
+                                        <input type="date" name="date_to" class="form-control" t-att-value="date_to or ''"/>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fa fa-filter me-2"></i>Filter
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2 class="mb-1">Quotation Management</h2>
+                                <p class="text-muted mb-0">Create and manage your sales quotations</p>
+                            </div>
+                            <a href="/sales_management/quotation/create" class="btn btn-primary">
+                                <i class="fa fa-plus me-2"></i>Create Quotation
+                            </a>
+                        </div>
+
+                        <!-- Quotations List -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="mb-0">All Quotations</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Order Number</th>
+                                                <th>Date</th>
+                                                <th>Customer</th>
+                                                <th>Total Amount</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="quotations" t-as="quote">
+                                                <tr>
+                                                    <td>
+                                                        <strong t-esc="quote.name"/>
+                                                    </td>
+                                                    <td t-esc="quote.date_order"/>
+                                                    <td t-esc="quote.partner_id.name"/>
+                                                    <td>
+                                                        <strong t-esc="'${:,.2f}'.format(quote.amount_total)"/>
+                                                    </td>
+                                                    <td>
+                                                        <span class="quote-status" t-att-class="'status-' + quote.state">
+                                                            <t t-esc="quote.state.title()"/>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <button type="button" class="btn btn-sm btn-outline-primary view-quote-btn" 
+                                                                    t-att-data-quote-id="quote.id" title="View">
+                                                                <i class="fa fa-eye"></i>
+                                                            </button>
+                                                            <a t-att-href="'/report/pdf/sale.report_saleorder/' + str(quote.id)" 
+                                                                class="btn btn-sm btn-outline-secondary" 
+                                                                title="Print PDF" 
+                                                                target="_blank">
+                                                                    <i class="fa fa-print"></i>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            <t t-if="not quotations">
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted py-5">
+                                                        <i class="fa fa-file-invoice-dollar fa-3x mb-3 text-muted"></i>
+                                                        <p class="mb-2">No quotations found</p>
+                                                        <a href="/sales_management/quotation/create" class="btn btn-primary">
+                                                            Create your first quotation
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quotation View Modal -->
+            <div class="modal fade" id="quotationViewModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Quotation Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="quotationViewContent">
+                            <!-- Content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const menuItems = document.querySelectorAll("#sidebarMenu a");
+                    const currentPath = window.location.pathname;
+
+                    menuItems.forEach(item =&gt; {
+                        item.classList.remove("active");
+                        if (item.getAttribute("href") === currentPath) {
+                            item.classList.add("active");
+                        }
+                    });
+
+                    // Add event listeners for view buttons
+                    document.querySelectorAll('.view-quote-btn').forEach(button =&gt; {
+                        button.addEventListener('click', function() {
+                            const quoteId = this.getAttribute('data-quote-id');
+                            viewQuotation(quoteId);
+                        });
+                    });
+                });
+
+                function viewQuotation(quoteId) {
+                    // Show loading state
+                    document.getElementById('quotationViewContent').innerHTML = '&lt;div class="text-center p-4"&gt;&lt;div class="spinner-border" role="status"&gt;&lt;/div&gt;&lt;p class="mt-2"&gt;Loading quotation details...&lt;/p&gt;&lt;/div&gt;';
+                    
+                    if (typeof bootstrap !== 'undefined') {
+                        const modalElement = document.getElementById('quotationViewModal');
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
                     }
                     
-                    .dashboard-content {
-                        margin-left: 0;
-                        padding: 20px 15px;
-                    }
+                    // Then load content
+                    fetch('/sales_management/quotation/view/' + quoteId)
+                        .then(response =&gt; {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.text();
+                        })
+                        .then(html =&gt; {
+                            document.getElementById('quotationViewContent').innerHTML = html;
+                        })
+                        .catch(error =&gt; {
+                            console.error('Error loading quotation:', error);
+                            document.getElementById('quotationViewContent').innerHTML = 
+                                '&lt;div class="alert alert-danger"&gt;Error loading quotation details. Please try again.&lt;/div&gt;';
+                        });
                 }
-            </style>
+            </script>
+        </t>
+    </template>
+
+    <template id="quotation_form" name="Quotation Creation Form">
+        <t t-call="website.layout">
+            <t t-set="head">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+                <style>
+                    /* Enhanced Sidebar Design - SAME AS CONTACTS */
+                    .dashboard-sidebar {
+                        position: fixed;
+                        top: 70px;
+                        left: 0;
+                        height: calc(100vh - 70px);
+                        width: 280px;
+                        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                        border-right: none;
+                        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+                        z-index: 1000;
+                        padding-top: 20px;
+                        overflow-y: auto;
+                        transition: all 0.3s ease;
+                    }
+
+                    .dashboard-sidebar .sidebar-header {
+                        padding: 0 25px 20px;
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                        margin-bottom: 15px;
+                    }
+
+                    .dashboard-sidebar .sidebar-header h4 {
+                        color: white;
+                        font-weight: 600;
+                        margin: 0;
+                        font-size: 1.2rem;
+                    }
+
+                    .dashboard-sidebar .list-group-item {
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px 20px;
+                        margin: 4px 15px;
+                        font-weight: 500;
+                        color: rgba(255,255,255,0.9);
+                        background: transparent;
+                        transition: all 0.3s ease;
+                        border-left: 3px solid transparent;
+                    }
+
+                    .dashboard-sidebar .list-group-item:hover {
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        transform: translateX(5px);
+                    }
+
+                    .dashboard-sidebar .list-group-item.active {
+                        background: rgba(255,255,255,0.15);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    }
+
+                    .dashboard-sidebar .list-group-item i {
+                        width: 20px;
+                        text-align: center;
+                        margin-right: 12px;
+                        font-size: 1.1rem;
+                    }
+
+                    .dashboard-content {
+                        margin-left: 300px;
+                        padding: 30px;
+                        min-height: calc(100vh - 70px);
+                        background: #f8fafc;
+                    }
+
+                    /* Search Dropdown Styles */
+                    .search-dropdown-container {
+                        position: relative;
+                    }
+
+                    .search-suggestions {
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        right: 0;
+                        background: white;
+                        max-height: 300px;
+                        overflow-y: auto;
+                        z-index: 1060;
+                        border: 1px solid #dee2e6;
+                        border-radius: 0.375rem;
+                        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+                        display: none;
+                    }
+
+                    .search-suggestions .list-group-item {
+                        border: none;
+                        border-bottom: 1px solid #f8f9fa;
+                        padding: 12px 16px;
+                        cursor: pointer;
+                    }
+
+                    .search-suggestions .list-group-item:hover {
+                        background-color: #f8f9fa;
+                    }
+
+                    .search-suggestions .list-group-item:last-child {
+                        border-bottom: none;
+                    }
+
+                    .search-dropdown-input {
+                        border-radius: 0.375rem !important;
+                    }
+
+                    .clear-search-btn {
+                        border-radius: 0 0.375rem 0.375rem 0 !important;
+                    }
+
+                    @media (max-width: 1024px) {
+                        .dashboard-sidebar {
+                            width: 250px;
+                        }
+                        .dashboard-content {
+                            margin-left: 270px;
+                        }
+                    }
+
+                    @media (max-width: 768px) {
+                        .dashboard-sidebar {
+                            width: 100%;
+                            height: auto;
+                            position: relative;
+                            top: 0;
+                        }
+                        
+                        .dashboard-content {
+                            margin-left: 0;
+                            padding: 20px 15px;
+                        }
+                    }
+                </style>
+            </t>
+            
             <div class="container-fluid">
                 <div class="row">
                     <!-- Enhanced Sidebar -->
@@ -245,155 +715,582 @@
                     <div class="dashboard-content col">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div>
-                                <h2 class="mb-1">Quotation Management</h2>
-                                <p class="text-muted mb-0">Create and manage your sales quotations</p>
+                                <h2 class="mb-1">Create Quotation</h2>
+                                <p class="text-muted mb-0">Create a new sales quotation</p>
                             </div>
-                            <button class="btn btn-primary">
-                                <i class="fa fa-plus me-2"></i>Create Quotation
-                            </button>
+                            <a href="/sales_management/quotation" class="btn btn-secondary">
+                                <i class="fa fa-arrow-left me-2"></i>Back to Quotations
+                            </a>
                         </div>
 
-                        <!-- Quotation Stats -->
-                        <div class="row mb-5">
-                            <div class="col-xl-2 col-md-4 mb-4">
-                                <div class="quote-stats-card">
-                                    <div class="stats-number">18</div>
-                                    <div class="stats-label">Total Quotes</div>
-                                </div>
-                            </div>
-                            <div class="col-xl-2 col-md-4 mb-4">
-                                <div class="quote-stats-card">
-                                    <div class="stats-number">6</div>
-                                    <div class="stats-label">Draft</div>
-                                </div>
-                            </div>
-                            <div class="col-xl-2 col-md-4 mb-4">
-                                <div class="quote-stats-card">
-                                    <div class="stats-number">8</div>
-                                    <div class="stats-label">Sent</div>
-                                </div>
-                            </div>
-                            <div class="col-xl-2 col-md-4 mb-4">
-                                <div class="quote-stats-card">
-                                    <div class="stats-number">3</div>
-                                    <div class="stats-label">Accepted</div>
-                                </div>
-                            </div>
-                            <div class="col-xl-2 col-md-4 mb-4">
-                                <div class="quote-stats-card">
-                                    <div class="stats-number">1</div>
-                                    <div class="stats-label">Expired</div>
-                                </div>
-                            </div>
-                            <div class="col-xl-2 col-md-4 mb-4">
-                                <div class="quote-stats-card">
-                                    <div class="stats-number">$89K</div>
-                                    <div class="stats-label">Total Value</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Quotations List -->
                         <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h2 class="mb-0">Recent Quotations</h2>
-                                <div class="btn-group">
-                                    <button class="btn btn-outline-primary btn-sm">All</button>
-                                    <button class="btn btn-outline-secondary btn-sm">Draft</button>
-                                    <button class="btn btn-outline-secondary btn-sm">Sent</button>
-                                </div>
+                            <div class="card-header">
+                                <h2 class="mb-0">Quotation Information</h2>
                             </div>
                             <div class="card-body">
-                                <!-- Quote Item 1 -->
-                                <div class="quote-item">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div class="flex-grow-1">
-                                            <h5 class="mb-1">QT-2024-001</h5>
-                                            <p class="text-muted mb-2">ABC Corporation - Enterprise Software Package</p>
-                                            <div class="d-flex gap-3">
-                                                <small class="text-muted"><i class="fa fa-building me-1"></i>ABC Corporation</small>
-                                                <small class="text-muted"><i class="fa fa-calendar me-1"></i>Created: Jan 15, 2024</small>
-                                                <small class="text-muted"><i class="fa fa-user me-1"></i>John Smith</small>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex flex-column align-items-end gap-2">
-                                            <span class="quote-status status-sent">Sent</span>
-                                            <strong>$45,000.00</strong>
-                                            <div class="btn-group">
-                                                <button class="btn btn-sm btn-outline-primary">View</button>
-                                                <button class="btn btn-sm btn-outline-success">Edit</button>
-                                                <button class="btn btn-sm btn-outline-info">Send</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <form method="post" action="/sales_management/quotation/submit" class="needs-validation" novalidate="novalidate" id="quotationForm">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
 
-                                <!-- Quote Item 2 -->
-                                <div class="quote-item">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div class="flex-grow-1">
-                                            <h5 class="mb-1">QT-2024-002</h5>
-                                            <p class="text-muted mb-2">XYZ Tech - Cloud Services Subscription</p>
-                                            <div class="d-flex gap-3">
-                                                <small class="text-muted"><i class="fa fa-building me-1"></i>XYZ Tech Solutions</small>
-                                                <small class="text-muted"><i class="fa fa-calendar me-1"></i>Created: Jan 12, 2024</small>
-                                                <small class="text-muted"><i class="fa fa-user me-1"></i>Sarah Johnson</small>
+                                    <!-- Basic Information -->
+                                    <div class="mb-4">
+                                        <h5 class="section-header">Basic Information</h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Customer *</label>
+                                                <div id="customer-search-container"></div>
                                             </div>
-                                        </div>
-                                        <div class="d-flex flex-column align-items-end gap-2">
-                                            <span class="quote-status status-accepted">Accepted</span>
-                                            <strong>$32,500.00</strong>
-                                            <div class="btn-group">
-                                                <button class="btn btn-sm btn-outline-primary">View</button>
-                                                <button class="btn btn-sm btn-outline-success">Convert to Order</button>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Quotation Date *</label>
+                                                <input type="date" class="form-control" name="date_order" required="required" t-att-value="today"/>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Quote Item 3 -->
-                                <div class="quote-item">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div class="flex-grow-1">
-                                            <h5 class="mb-1">QT-2024-003</h5>
-                                            <p class="text-muted mb-2">Global Manufacturing - Equipment Maintenance</p>
-                                            <div class="d-flex gap-3">
-                                                <small class="text-muted"><i class="fa fa-building me-1"></i>Global Manufacturing Inc</small>
-                                                <small class="text-muted"><i class="fa fa-calendar me-1"></i>Created: Jan 10, 2024</small>
-                                                <small class="text-muted"><i class="fa fa-user me-1"></i>Mike Thompson</small>
-                                            </div>
+                                    <!-- Order Lines -->
+                                    <div class="mb-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="section-header mb-0">Order Lines</h5>
+                                            <button type="button" class="btn btn-outline-primary" onclick="addOrderLine()">
+                                                <i class="fa fa-plus me-2"></i>Add Product
+                                            </button>
                                         </div>
-                                        <div class="d-flex flex-column align-items-end gap-2">
-                                            <span class="quote-status status-draft">Draft</span>
-                                            <strong>$28,000.00</strong>
-                                            <div class="btn-group">
-                                                <button class="btn btn-sm btn-outline-primary">View</button>
-                                                <button class="btn btn-sm btn-outline-warning">Edit</button>
-                                                <button class="btn btn-sm btn-outline-info">Send</button>
+                                        <div id="order-lines-container">
+                                            <!-- Order lines will be added here -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Total Amount -->
+                                    <div class="total-amount-section">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5 class="mb-0">Total Amount</h5>
+                                                <p class="text-muted mb-0">Calculated automatically from order lines</p>
+                                            </div>
+                                            <div class="col-md-6 text-end">
+                                                <h3 class="text-primary mb-0" id="total-amount">$0.00</h3>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+
+                                    <div class="d-flex gap-3 pt-4 border-top">
+                                        <button type="submit" class="btn btn-primary px-5">
+                                            <i class="fa fa-save me-2"></i>Create Quotation
+                                        </button>
+                                        <a href="/sales_management/quotation" class="btn btn-outline-secondary px-4">Cancel</a>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script>
+            <![CDATA[
+                // Enhanced Search Dropdown Component
+                class SearchDropdown {
+                    constructor(config) {
+                        this.config = config;
+                        this.state = {
+                            searchTerm: "",
+                            showSuggestions: false,
+                            filteredItems: [],
+                            selectedItem: null
+                        };
+                        this.init();
+                    }
+
+                    init() {
+                        this.createHTML();
+                        this.bindEvents();
+                    }
+
+                    createHTML() {
+                        const container = this.config.container;
+                        const placeholder = this.config.placeholder;
+                        const name = this.config.name;
+                        
+                        container.innerHTML = `
+                            <div class="search-dropdown-container position-relative">
+                                <div class="input-group">
+                                    <input type="text" 
+                                        class="form-control search-dropdown-input" 
+                                        placeholder="${placeholder}" 
+                                        autocomplete="off">
+                                    <input type="hidden" name="${name}" class="selected-value">
+                                    <button class="btn btn-outline-secondary clear-search-btn" type="button" style="display: none;">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="search-suggestions dropdown-menu w-100" style="display: none;">
+                                    <div class="list-group"></div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        this.elements = {
+                            container: container.querySelector('.search-dropdown-container'),
+                            input: container.querySelector('.search-dropdown-input'),
+                            hiddenInput: container.querySelector('.selected-value'),
+                            suggestions: container.querySelector('.search-suggestions'),
+                            clearBtn: container.querySelector('.clear-search-btn'),
+                            list: container.querySelector('.list-group')
+                        };
+                    }
+
+                    bindEvents() {
+                        const self = this;
+                        
+                        // Input events
+                        this.elements.input.addEventListener('input', function(ev) { 
+                            self.onSearchChange(ev); 
+                        });
+                        
+                        this.elements.input.addEventListener('focus', function() { 
+                            self.onSearchFocus(); 
+                        });
+                        
+                        this.elements.input.addEventListener('blur', function() { 
+                            setTimeout(() => {
+                                self.hideSuggestions();
+                            }, 200);
+                        });
+                        
+                        this.elements.clearBtn.addEventListener('click', function() { 
+                            self.clearSearch(); 
+                        });
+                        
+                        // Enter key to select first item
+                        this.elements.input.addEventListener('keydown', function(ev) {
+                            if (ev.key === 'Enter') {
+                                ev.preventDefault();
+                                if (self.state.filteredItems.length > 0) {
+                                    self.onItemSelect(self.state.filteredItems[0]);
+                                }
+                            }
+                        });
+                    }
+
+                    async onSearchChange(ev) {
+                        const searchTerm = ev.target.value;
+                        this.state.searchTerm = searchTerm;
+                        
+                        // Show/hide clear button
+                        this.elements.clearBtn.style.display = searchTerm ? 'block' : 'none';
+
+                        if (searchTerm.length >= 1) {
+                            await this.loadSuggestions(searchTerm);
+                            this.showSuggestions();
+                        } else if (searchTerm.length === 0) {
+                            // When cleared, show all items
+                            await this.loadAllItems();
+                            this.showSuggestions();
+                        }
+                    }
+
+                    async onSearchFocus() {
+                        // Show all items when clicking on empty field
+                        if (!this.state.searchTerm) {
+                            await this.loadAllItems();
+                            this.showSuggestions();
+                        } else if (this.state.filteredItems.length > 0) {
+                            this.showSuggestions();
+                        }
+                    }
+
+                    async loadAllItems() {
+                        await this.loadSuggestions('');
+                    }
+
+                    async loadSuggestions(searchTerm) {
+                        try {
+                            const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+                            
+                            const response = await fetch(this.config.searchUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken
+                                },
+                                body: JSON.stringify({
+                                    search_term: searchTerm
+                                })
+                            });
+                            
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            
+                            const data = await response.json();
+                            this.state.filteredItems = data.items || [];
+                            this.renderSuggestions();
+                            
+                        } catch (error) {
+                            console.error('Error loading suggestions:', error);
+                            this.state.filteredItems = [];
+                            this.renderSuggestions();
+                        }
+                    }
+
+                    renderSuggestions() {
+                        const displayField = this.config.displayField;
+                        const secondaryField = this.config.secondaryField;
+                        this.elements.list.innerHTML = '';
+
+                        if (this.state.filteredItems.length === 0) {
+                            this.elements.list.innerHTML = '<div class="list-group-item text-muted text-center">No results found</div>';
+                            return;
+                        }
+
+                        const self = this;
+                        this.state.filteredItems.forEach(function(item) {
+                            const itemElement = document.createElement('button');
+                            itemElement.type = 'button';
+                            itemElement.className = 'list-group-item list-group-item-action';
+                            
+                            let secondaryHtml = '';
+                            if (secondaryField && item[secondaryField]) {
+                                secondaryHtml = '<div class="text-muted small">' + item[secondaryField] + '</div>';
+                            }
+                            
+                            itemElement.innerHTML = `
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold">${item[displayField]}</div>
+                                        ${secondaryHtml}
+                                    </div>
+                                    <div class="text-muted small">${item.type || ''}</div>
+                                </div>
+                            `;
+                            itemElement.addEventListener('click', function() { 
+                                self.onItemSelect(item); 
+                            });
+                            self.elements.list.appendChild(itemElement);
+                        });
+                    }
+
+                    onItemSelect(item) {
+                        this.state.selectedItem = item;
+                        this.state.searchTerm = item[this.config.displayField];
+                        this.elements.input.value = this.state.searchTerm;
+                        this.elements.hiddenInput.value = item.id;
+                        this.hideSuggestions();
+
+                        // Call custom callback if provided
+                        if (this.config.onSelect) {
+                            this.config.onSelect(item);
+                        }
+                    }
+
+                    clearSearch() {
+                        this.state.searchTerm = "";
+                        this.state.selectedItem = null;
+                        this.state.filteredItems = [];
+                        this.elements.input.value = "";
+                        this.elements.hiddenInput.value = "";
+                        this.elements.clearBtn.style.display = 'none';
+                        this.hideSuggestions();
+
+                        // Call custom callback if provided
+                        if (this.config.onClear) {
+                            this.config.onClear();
+                        }
+                    }
+
+                    showSuggestions() {
+                        this.elements.suggestions.style.display = 'block';
+                    }
+
+                    hideSuggestions() {
+                        this.elements.suggestions.style.display = 'none';
+                    }
+
+                    // Public methods
+                    setValue(value) {
+                        if (value && value.id) {
+                            this.onItemSelect(value);
+                        }
+                    }
+
+                    getValue() {
+                        return this.state.selectedItem;
+                    }
+
+                    clear() {
+                        this.clearSearch();
+                    }
+                }
+
+                let customerSearch;
+                let productSearches = {};
+                let orderLineCount = 0;
+
                 document.addEventListener("DOMContentLoaded", function () {
                     const menuItems = document.querySelectorAll("#sidebarMenu a");
                     const currentPath = window.location.pathname;
 
-                    menuItems.forEach(item => {
+                    // Initialize search dropdowns
+                    customerSearch = new SearchDropdown({
+                        container: document.getElementById('customer-search-container'),
+                        placeholder: 'Search for customer...',
+                        name: 'partner_id',
+                        searchUrl: '/sales_management/search/customers',
+                        displayField: 'name',
+                        secondaryField: 'email'
+                    });
+
+                    // Add first order line by default
+                    addOrderLine();
+
+                    // Initialize sidebar menu active state
+                    menuItems.forEach(function(item) {
                         item.classList.remove("active");
                         if (item.getAttribute("href") === currentPath) {
                             item.classList.add("active");
                         }
                     });
                 });
+
+                function addOrderLine() {
+                    const container = document.getElementById('order-lines-container');
+                    const lineId = 'order-line-' + orderLineCount;
+                    
+                    const newLine = document.createElement('div');
+                    newLine.className = 'order-line-item';
+                    newLine.id = lineId;
+                    
+                    // Create product search container for this line
+                    const productSearchContainerId = 'product-search-' + orderLineCount;
+                    
+                    newLine.innerHTML = 
+                        '<button type="button" class="btn btn-danger btn-sm remove-btn" onclick="removeOrderLine(\'' + lineId + '\')">' +
+                            '<i class="fa fa-trash"></i>' +
+                        '</button>' +
+                        '<div class="row">' +
+                            '<div class="col-md-4 mb-3">' +
+                                '<label class="form-label">Product *</label>' +
+                                '<div id="' + productSearchContainerId + '"></div>' +
+                            '</div>' +
+                            '<div class="col-md-2 mb-3">' +
+                                '<label class="form-label">Quantity *</label>' +
+                                '<input type="number" class="form-control quantity-input" name="quantity[]" value="1" min="1" step="1" required="required" onchange="calculateLineTotal(this)"/>' +
+                            '</div>' +
+                            '<div class="col-md-3 mb-3">' +
+                                '<label class="form-label">Unit Price</label>' +
+                                '<input type="number" class="form-control price-input" name="price_unit[]" readonly="readonly" step="0.01"/>' +
+                            '</div>' +
+                            '<div class="col-md-3 mb-3">' +
+                                '<label class="form-label">Amount</label>' +
+                                '<input type="text" class="form-control amount-display" readonly="readonly" value="$0.00"/>' +
+                            '</div>' +
+                        '</div>';
+                    
+                    container.appendChild(newLine);
+                    
+                    // Initialize product search for this line
+                    const productSearch = new SearchDropdown({
+                        container: document.getElementById(productSearchContainerId),
+                        placeholder: 'Search for product...',
+                        name: 'product_id[]',
+                        searchUrl: '/sales_management/search/products',
+                        displayField: 'name',
+                        secondaryField: 'default_code',
+                        onSelect: function(product) {
+                            const row = document.getElementById(productSearchContainerId).closest('.row');
+                            const priceInput = row.querySelector('.price-input');
+                            const quantityInput = row.querySelector('.quantity-input');
+                            
+                            priceInput.value = parseFloat(product.list_price).toFixed(2);
+                            calculateLineTotal(quantityInput);
+                        }
+                    });
+                    
+                    // Store reference to product search
+                    productSearches[productSearchContainerId] = productSearch;
+                    
+                    orderLineCount++;
+                    calculateTotalAmount();
+                }
+
+                function removeOrderLine(lineId) {
+                    const lineElement = document.getElementById(lineId);
+                    if (lineElement) {
+                        // Remove product search reference
+                        const productSearchContainerId = 'product-search-' + lineId.split('-')[2];
+                        delete productSearches[productSearchContainerId];
+                        
+                        lineElement.remove();
+                        calculateTotalAmount();
+                    }
+                }
+
+                function calculateLineTotal(inputElement) {
+                    const row = inputElement.closest('.row');
+                    const priceInput = row.querySelector('.price-input');
+                    const quantityInput = row.querySelector('.quantity-input');
+                    const amountDisplay = row.querySelector('.amount-display');
+                    
+                    const price = parseFloat(priceInput.value) || 0;
+                    const quantity = parseFloat(quantityInput.value) || 0;
+                    const total = price * quantity;
+                    
+                    amountDisplay.value = '$' + total.toFixed(2);
+                    calculateTotalAmount();
+                }
+
+                function calculateTotalAmount() {
+                    const amountDisplays = document.querySelectorAll('.amount-display');
+                    let total = 0;
+                    
+                    amountDisplays.forEach(function(display) {
+                        const value = display.value.replace('$', '');
+                        total += parseFloat(value) || 0;
+                    });
+                    
+                    document.getElementById('total-amount').textContent = '$' + total.toFixed(2);
+                }
+
+                // Form validation
+                document.getElementById('quotationForm').addEventListener('submit', function(e) {
+                    const customer = customerSearch.getValue();
+                    if (!customer) {
+                        e.preventDefault();
+                        alert('Please select a customer.');
+                        customerSearch.elements.input.focus();
+                        return;
+                    }
+                    
+                    const productInputs = document.querySelectorAll('input[name="product_id[]"]');
+                    let hasProducts = false;
+                    
+                    productInputs.forEach(function(input) {
+                        if (input.value) {
+                            hasProducts = true;
+                        }
+                    });
+                    
+                    if (!hasProducts) {
+                        e.preventDefault();
+                        alert('Please add at least one product to the quotation.');
+                        return;
+                    }
+                    
+                    // Validate each product has a quantity
+                    const quantityInputs = document.querySelectorAll('input[name="quantity[]"]');
+                    let allValid = true;
+                    
+                    quantityInputs.forEach(function(input) {
+                        if (!input.value || parseFloat(input.value) <= 0) {
+                            allValid = false;
+                            input.classList.add('is-invalid');
+                        } else {
+                            input.classList.remove('is-invalid');
+                        }
+                    });
+                    
+                    if (!allValid) {
+                        e.preventDefault();
+                        alert('Please enter valid quantities for all products.');
+                        return;
+                    }
+                    
+                    // Show loading state
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Creating...';
+                    submitBtn.disabled = true;
+                    
+                    // Allow form submission to proceed
+                });
+            ]]>
             </script>
         </t>
+    </template>
+
+    <template id="quotation_view" name="Quotation View Details">
+        <div class="quotation-view-content">
+            <t t-if="quotation">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="section-header">Quotation Information</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Order Number</label>
+                            <p class="form-control-plaintext" t-esc="quotation.name"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Customer</label>
+                            <p class="form-control-plaintext" t-esc="quotation.partner_id.name"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Date</label>
+                            <p class="form-control-plaintext" t-esc="quotation.date_order"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Status</label>
+                            <p class="form-control-plaintext">
+                                <span class="quote-status" t-att-class="'status-' + quotation.state">
+                                    <t t-esc="quotation.state.title()"/>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="section-header">Amount Information</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Subtotal</label>
+                            <p class="form-control-plaintext" t-esc="'${:,.2f}'.format(quotation.amount_untaxed)"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tax</label>
+                            <p class="form-control-plaintext" t-esc="'${:,.2f}'.format(quotation.amount_tax)"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Total Amount</label>
+                            <p class="form-control-plaintext fs-5 fw-bold text-primary">
+                                <t t-esc="'${:,.2f}'.format(quotation.amount_total)"/>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5 class="section-header">Order Lines</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Tax</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="quotation.order_line" t-as="line">
+                                        <tr>
+                                            <td t-esc="line.product_id.name"/>
+                                            <td t-esc="line.product_uom_qty"/>
+                                            <td t-esc="'${:,.2f}'.format(line.price_unit)"/>
+                                            <td t-esc="'${:,.2f}'.format(line.price_tax)"/>
+                                            <td t-esc="'${:,.2f}'.format(line.price_subtotal)"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle me-2"></i>
+                    Quotation not found or you don't have permission to view this quotation.
+                </div>
+            </t>
+        </div>
     </template>
 
 </odoo>

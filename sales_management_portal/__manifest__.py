@@ -14,6 +14,9 @@
         'portal',
         'website',
         'contacts',
+        'sale',
+        'sale_management',
+        'product',
     ],
     'data': [
         'security/ir.model.access.csv',
