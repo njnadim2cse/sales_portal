@@ -297,6 +297,7 @@
                         border-radius: 0.375rem;
                         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
                         display: none;
+                        margin-top: 2px;
                     }
 
                     .search-suggestions .list-group-item {
@@ -304,10 +305,13 @@
                         border-bottom: 1px solid #f8f9fa;
                         padding: 12px 16px;
                         cursor: pointer;
+                        transition: background-color 0.2s;
                     }
 
-                    .search-suggestions .list-group-item:hover {
+                    .search-suggestions .list-group-item:hover,
+                    .search-suggestions .list-group-item:focus {
                         background-color: #f8f9fa;
+                        outline: none;
                     }
 
                     .search-suggestions .list-group-item:last-child {
@@ -315,11 +319,17 @@
                     }
 
                     .search-dropdown-input {
-                        border-radius: 0.375rem !important;
+                        border-radius: 0.375rem 0 0 0.375rem !important;
                     }
 
                     .clear-search-btn {
                         border-radius: 0 0.375rem 0.375rem 0 !important;
+                        z-index: 10;
+                    }
+
+                    .badge {
+                        font-size: 0.75rem;
+                        padding: 0.25rem 0.5rem;
                     }
 
                     @media (max-width: 1024px) {
@@ -360,10 +370,16 @@
                                 <i class="fa fa-tachometer-alt me-2"></i> Dashboard
                             </a>
                             
-                            <!-- Todo Portal - Conditionally visible -->
-                            <t t-if="request.env.user.use_todo_portal">
-                                <a href="/sales_management/todo" class="list-group-item list-group-item-action">
-                                    <i class="fa fa-check-circle me-2"></i> Todo
+                            <!-- Sales Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_sales_portal">
+                                <a href="/sales_management/sales" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-briefcase me-2"></i> Sales
+                                </a>
+                            </t>
+                            <!-- Service Portal - Conditionally visible -->
+                             <t t-if="request.env.user.use_service_portal">
+                                <a href="/sales_management/service" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-concierge-bell me-2"></i> Service
                                 </a>
                             </t>
                             
@@ -1129,10 +1145,16 @@
                                 <i class="fa fa-tachometer-alt me-2"></i> Dashboard
                             </a>
                             
-                            <!-- Todo Portal - Conditionally visible -->
-                            <t t-if="request.env.user.use_todo_portal">
-                                <a href="/sales_management/todo" class="list-group-item list-group-item-action">
-                                    <i class="fa fa-check-circle me-2"></i> Todo
+                            <!-- Sales Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_sales_portal">
+                                <a href="/sales_management/sales" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-briefcase me-2"></i> Sales
+                                </a>
+                            </t>
+                            <!-- Service Portal - Conditionally visible -->
+                             <t t-if="request.env.user.use_service_portal">
+                                <a href="/sales_management/service" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-concierge-bell me-2"></i> Service
                                 </a>
                             </t>
                             
@@ -1358,7 +1380,7 @@
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script>
             <![CDATA[
-                // Enhanced Search Dropdown Component
+                // Enhanced Search Dropdown Component for Odoo 19
                 class SearchDropdown {
                     constructor(config) {
                         this.config = config;
@@ -1366,7 +1388,8 @@
                             searchTerm: "",
                             showSuggestions: false,
                             filteredItems: [],
-                            selectedItem: null
+                            selectedItem: null,
+                            isLoading: false
                         };
                         this.init();
                     }
@@ -1378,7 +1401,7 @@
 
                     createHTML() {
                         const container = this.config.container;
-                        const placeholder = this.config.placeholder;
+                        const placeholder = this.config.placeholder || 'Search...';
                         const name = this.config.name;
                         
                         container.innerHTML = `
@@ -1393,7 +1416,7 @@
                                         <i class="fa fa-times"></i>
                                     </button>
                                 </div>
-                                <div class="search-suggestions dropdown-menu w-100" style="display: none;">
+                                <div class="search-suggestions" style="display: none;">
                                     <div class="list-group"></div>
                                 </div>
                             </div>
@@ -1421,23 +1444,33 @@
                             self.onSearchFocus(); 
                         });
                         
+                        // Blur event with delay to allow click on suggestions
                         this.elements.input.addEventListener('blur', function() { 
                             setTimeout(() => {
                                 self.hideSuggestions();
                             }, 200);
                         });
                         
+                        // Clear button
                         this.elements.clearBtn.addEventListener('click', function() { 
                             self.clearSearch(); 
                         });
                         
-                        // Enter key to select first item
+                        // Keyboard navigation
                         this.elements.input.addEventListener('keydown', function(ev) {
                             if (ev.key === 'Enter') {
                                 ev.preventDefault();
                                 if (self.state.filteredItems.length > 0) {
                                     self.onItemSelect(self.state.filteredItems[0]);
                                 }
+                            } else if (ev.key === 'Escape') {
+                                self.hideSuggestions();
+                            } else if (ev.key === 'ArrowDown') {
+                                ev.preventDefault();
+                                self.focusNextItem();
+                            } else if (ev.key === 'ArrowUp') {
+                                ev.preventDefault();
+                                self.focusPreviousItem();
                             }
                         });
                     }
@@ -1449,12 +1482,13 @@
                         // Show/hide clear button
                         this.elements.clearBtn.style.display = searchTerm ? 'block' : 'none';
 
-                        if (searchTerm.length >= 1) {
-                            await this.loadSuggestions(searchTerm);
-                            this.showSuggestions();
-                        } else if (searchTerm.length === 0) {
-                            // When cleared, show all items
+                        // If field is cleared manually, clear the hidden input
+                        if (searchTerm.length === 0) {
+                            this.elements.hiddenInput.value = '';
                             await this.loadAllItems();
+                            this.showSuggestions();
+                        } else if (searchTerm.length >= 1) {
+                            await this.loadSuggestions(searchTerm);
                             this.showSuggestions();
                         }
                     }
@@ -1474,6 +1508,11 @@
                     }
 
                     async loadSuggestions(searchTerm) {
+                        if (this.state.isLoading) return;
+                        
+                        this.state.isLoading = true;
+                        this.showLoadingState();
+                        
                         try {
                             const csrfToken = document.querySelector('input[name="csrf_token"]').value;
                             
@@ -1484,7 +1523,11 @@
                                     'X-CSRF-TOKEN': csrfToken
                                 },
                                 body: JSON.stringify({
-                                    search_term: searchTerm
+                                    jsonrpc: "2.0",
+                                    method: "call",
+                                    params: {
+                                        search_term: searchTerm
+                                    }
                                 })
                             });
                             
@@ -1493,58 +1536,82 @@
                             }
                             
                             const data = await response.json();
-                            this.state.filteredItems = data.items || [];
+                            
+                            // Handle Odoo JSON-RPC response format
+                            if (data.result) {
+                                this.state.filteredItems = data.result.items || [];
+                            } else if (data.items) {
+                                this.state.filteredItems = data.items || [];
+                            } else {
+                                this.state.filteredItems = [];
+                            }
+                            
                             this.renderSuggestions();
                             
                         } catch (error) {
                             console.error('Error loading suggestions:', error);
                             this.state.filteredItems = [];
                             this.renderSuggestions();
+                        } finally {
+                            this.state.isLoading = false;
                         }
                     }
 
+                    showLoadingState() {
+                        this.elements.list.innerHTML = '<div class="list-group-item text-center text-muted"><i class="fa fa-spinner fa-spin me-2"></i>Loading...</div>';
+                    }
+
                     renderSuggestions() {
-                        const displayField = this.config.displayField;
+                        const displayField = this.config.displayField || 'name';
                         const secondaryField = this.config.secondaryField;
                         this.elements.list.innerHTML = '';
 
                         if (this.state.filteredItems.length === 0) {
-                            this.elements.list.innerHTML = '<div class="list-group-item text-muted text-center">No results found</div>';
+                            this.elements.list.innerHTML = '<div class="list-group-item text-muted text-center"><i class="fa fa-search me-2"></i>No results found</div>';
                             return;
                         }
 
                         const self = this;
-                        this.state.filteredItems.forEach(function(item) {
+                        this.state.filteredItems.forEach(function(item, index) {
                             const itemElement = document.createElement('button');
                             itemElement.type = 'button';
                             itemElement.className = 'list-group-item list-group-item-action';
+                            itemElement.setAttribute('data-index', index);
                             
                             let secondaryHtml = '';
                             if (secondaryField && item[secondaryField]) {
-                                secondaryHtml = '<div class="text-muted small">' + item[secondaryField] + '</div>';
+                                secondaryHtml = '<div class="text-muted small">' + self.escapeHtml(item[secondaryField]) + '</div>';
+                            }
+                            
+                            let typeHtml = '';
+                            if (item.type) {
+                                typeHtml = '<span class="badge bg-secondary">' + self.escapeHtml(item.type) + '</span>';
                             }
                             
                             itemElement.innerHTML = `
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="fw-bold">${item[displayField]}</div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">${self.escapeHtml(item[displayField])}</div>
                                         ${secondaryHtml}
                                     </div>
-                                    <div class="text-muted small">${item.type || ''}</div>
+                                    ${typeHtml}
                                 </div>
                             `;
+                            
                             itemElement.addEventListener('click', function() { 
                                 self.onItemSelect(item); 
                             });
+                            
                             self.elements.list.appendChild(itemElement);
                         });
                     }
 
                     onItemSelect(item) {
                         this.state.selectedItem = item;
-                        this.state.searchTerm = item[this.config.displayField];
+                        this.state.searchTerm = item[this.config.displayField || 'name'];
                         this.elements.input.value = this.state.searchTerm;
                         this.elements.hiddenInput.value = item.id;
+                        this.elements.clearBtn.style.display = 'block';
                         this.hideSuggestions();
 
                         // Call custom callback if provided
@@ -1561,6 +1628,9 @@
                         this.elements.hiddenInput.value = "";
                         this.elements.clearBtn.style.display = 'none';
                         this.hideSuggestions();
+                        
+                        // Focus back on input
+                        this.elements.input.focus();
 
                         // Call custom callback if provided
                         if (this.config.onClear) {
@@ -1574,6 +1644,40 @@
 
                     hideSuggestions() {
                         this.elements.suggestions.style.display = 'none';
+                    }
+
+                    focusNextItem() {
+                        const items = this.elements.list.querySelectorAll('.list-group-item');
+                        if (items.length === 0) return;
+                        
+                        const activeItem = this.elements.list.querySelector('.list-group-item:focus');
+                        if (!activeItem) {
+                            items[0].focus();
+                        } else {
+                            const currentIndex = parseInt(activeItem.getAttribute('data-index'));
+                            if (currentIndex < items.length - 1) {
+                                items[currentIndex + 1].focus();
+                            }
+                        }
+                    }
+
+                    focusPreviousItem() {
+                        const items = this.elements.list.querySelectorAll('.list-group-item');
+                        if (items.length === 0) return;
+                        
+                        const activeItem = this.elements.list.querySelector('.list-group-item:focus');
+                        if (activeItem) {
+                            const currentIndex = parseInt(activeItem.getAttribute('data-index'));
+                            if (currentIndex > 0) {
+                                items[currentIndex - 1].focus();
+                            }
+                        }
+                    }
+
+                    escapeHtml(text) {
+                        const div = document.createElement('div');
+                        div.textContent = text;
+                        return div.innerHTML;
                     }
 
                     // Public methods
@@ -1592,8 +1696,10 @@
                     }
                 }
 
+                // Global variables
                 let companySearch, tagsSearch;
 
+                // Toggle contact type (Person vs Company)
                 function toggleContactType() {
                     const companyType = document.querySelector('input[name="company_type"]:checked').value;
                     const contactPersonsSection = document.getElementById('contact-persons-section');
@@ -1616,16 +1722,18 @@
                     }
                 }
 
+                // Show contact wizard modal
                 function showContactWizard() {
                     document.getElementById('contactWizard').style.display = 'flex';
-                    // Clear form
                     document.getElementById('contactPersonForm').reset();
                 }
 
+                // Hide contact wizard modal
                 function hideContactWizard() {
                     document.getElementById('contactWizard').style.display = 'none';
                 }
 
+                // Add contact person from wizard
                 function addContactFromWizard() {
                     const name = document.getElementById('wizard_name').value;
                     const email = document.getElementById('wizard_email').value;
@@ -1714,37 +1822,32 @@
                     hideContactWizard();
                 }
 
+                // Show success message
                 function showSuccessMessage() {
                     const successMessage = document.getElementById('successMessage');
                     successMessage.style.display = 'block';
                     
-                    // Auto hide after 3 seconds
                     setTimeout(function() {
                         successMessage.style.display = 'none';
                     }, 3000);
                 }
 
+                // Submit form
                 function submitForm() {
                     const form = document.getElementById('contactForm');
                     const submitBtn = document.getElementById('submitBtn');
-                    const originalText = submitBtn.innerHTML;
                     
-                    // Show loading state
                     submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Creating...';
                     submitBtn.disabled = true;
                     
-                    // Show success message immediately
                     showSuccessMessage();
                     
-                    // Submit form after a short delay to show the success message
                     setTimeout(function() {
-                        // Create a temporary form for submission
                         const tempForm = document.createElement('form');
                         tempForm.method = 'POST';
                         tempForm.action = '/sales_management/contacts/submit';
                         tempForm.style.display = 'none';
                         
-                        // Copy all form data
                         const formData = new FormData(form);
                         for (let [key, value] of formData.entries()) {
                             const input = document.createElement('input');
@@ -1754,7 +1857,6 @@
                             tempForm.appendChild(input);
                         }
                         
-                        // Add redirect parameter to ensure redirect happens
                         const redirectInput = document.createElement('input');
                         redirectInput.type = 'hidden';
                         redirectInput.name = 'redirect_to_list';
@@ -1763,77 +1865,12 @@
                         
                         document.body.appendChild(tempForm);
                         tempForm.submit();
-                    }, 1500); // Show success message for 1.5 seconds before redirect
+                    }, 1500);
                 }
 
-                document.addEventListener("DOMContentLoaded", function () {
-                    const submitBtn = document.getElementById('submitBtn');
-                    const menuItems = document.querySelectorAll("#sidebarMenu a");
-                    const currentPath = window.location.pathname;
-
-                    // Initialize search dropdowns
-                    companySearch = new SearchDropdown({
-                        container: document.getElementById('company-search-container'),
-                        placeholder: 'Search for company...',
-                        name: 'company_id',
-                        searchUrl: '/sales_management/search/companies',
-                        displayField: 'name',
-                        secondaryField: 'email',
-                        onSelect: function(company) {
-                            // Load company address when selected
-                            loadCompanyAddress(company.id);
-                        },
-                        onClear: function() {
-                            // Clear address fields when cleared
-                            clearAddressFields();
-                        }
-                    });
-
-                    tagsSearch = new SearchDropdown({
-                        container: document.getElementById('tags-search-container'),
-                        placeholder: 'Search for tags...',
-                        name: 'category_id',
-                        searchUrl: '/sales_management/search/tags',
-                        displayField: 'name'
-                    });
-
-                    // Handle form submission
-                    submitBtn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        
-                        // Basic form validation
-                        const nameField = document.querySelector('input[name="name"]');
-                        if (!nameField.value.trim()) {
-                            alert('Please enter a name');
-                            nameField.focus();
-                            return;
-                        }
-                        
-                        submitForm();
-                    });
-
-                    // Initialize sidebar menu active state
-                    menuItems.forEach(function(item) {
-                        item.classList.remove("active");
-                        if (item.getAttribute("href") === currentPath) {
-                            item.classList.add("active");
-                        }
-                    });
-
-                    // Initialize contact type visibility
-                    toggleContactType();
-                });
-
-                // Close wizard when clicking outside
-                document.getElementById('contactWizard').addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        hideContactWizard();
-                    }
-                });
-
+                // Load company address
                 function loadCompanyAddress(companyId) {
                     if (companyId) {
-                        // Load company address
                         fetch('/sales_management/contacts/get-company-address', {
                             method: 'POST',
                             headers: {
@@ -1841,22 +1878,27 @@
                                 'X-CSRF-TOKEN': document.querySelector('input[name="csrf_token"]').value
                             },
                             body: JSON.stringify({
-                                'company_id': companyId
+                                jsonrpc: "2.0",
+                                method: "call",
+                                params: {
+                                    company_id: companyId
+                                }
                             })
                         })
                         .then(function(response) { return response.json(); })
                         .then(function(data) {
-                            if (data.street) document.querySelector('input[name="street"]').value = data.street;
-                            if (data.street2) document.querySelector('input[name="street2"]').value = data.street2;
-                            if (data.city) document.querySelector('input[name="city"]').value = data.city;
-                            if (data.zip) document.querySelector('input[name="zip"]').value = data.zip;
-                            if (data.state_id) document.querySelector('select[name="state_id"]').value = data.state_id;
-                            if (data.country_id) document.querySelector('select[name="country_id"]').value = data.country_id;
+                            const result = data.result || data;
+                            
+                            if (result.street) document.querySelector('input[name="street"]').value = result.street;
+                            if (result.street2) document.querySelector('input[name="street2"]').value = result.street2;
+                            if (result.city) document.querySelector('input[name="city"]').value = result.city;
+                            if (result.zip) document.querySelector('input[name="zip"]').value = result.zip;
+                            if (result.state_id) document.querySelector('select[name="state_id"]').value = result.state_id;
+                            if (result.country_id) document.querySelector('select[name="country_id"]').value = result.country_id;
                             
                             // Set tags if available - only for person type
                             const companyType = document.querySelector('input[name="company_type"]:checked').value;
-                            if (companyType === 'person' && data.category_id && data.category_id.length > 0) {
-                                // Find tag by ID
+                            if (companyType === 'person' && result.category_id && result.category_id.length > 0) {
                                 fetch('/sales_management/search/tags', {
                                     method: 'POST',
                                     headers: {
@@ -1864,13 +1906,18 @@
                                         'X-CSRF-TOKEN': document.querySelector('input[name="csrf_token"]').value
                                     },
                                     body: JSON.stringify({
-                                        search_term: ''
+                                        jsonrpc: "2.0",
+                                        method: "call",
+                                        params: {
+                                            search_term: ''
+                                        }
                                     })
                                 })
                                 .then(function(response) { return response.json(); })
                                 .then(function(tagData) {
-                                    const tag = tagData.items.find(function(t) { return t.id === data.category_id[0]; });
-                                    if (tag) {
+                                    const items = tagData.result ? tagData.result.items : (tagData.items || []);
+                                    const tag = items.find(function(t) { return t.id === result.category_id[0]; });
+                                    if (tag && tagsSearch) {
                                         tagsSearch.setValue(tag);
                                     }
                                 });
@@ -1884,6 +1931,7 @@
                     }
                 }
 
+                // Clear address fields
                 function clearAddressFields() {
                     document.querySelector('input[name="street"]').value = '';
                     document.querySelector('input[name="street2"]').value = '';
@@ -1894,6 +1942,88 @@
                     if (tagsSearch) {
                         tagsSearch.clear();
                     }
+                }
+
+                // Initialize on DOM ready
+                document.addEventListener("DOMContentLoaded", function () {
+                    // Initialize Company Search Dropdown
+                    const companyContainer = document.getElementById('company-search-container');
+                    if (companyContainer) {
+                        companySearch = new SearchDropdown({
+                            container: companyContainer,
+                            placeholder: 'Search for company...',
+                            name: 'company_id',
+                            searchUrl: '/sales_management/search/companies',
+                            displayField: 'name',
+                            secondaryField: 'phone',
+                            onSelect: function(company) {
+                                console.log('Company selected:', company);
+                                loadCompanyAddress(company.id);
+                            },
+                            onClear: function() {
+                                console.log('Company cleared');
+                                clearAddressFields();
+                            }
+                        });
+                    }
+
+                    // Initialize Tags Search Dropdown
+                    const tagsContainer = document.getElementById('tags-search-container');
+                    if (tagsContainer) {
+                        tagsSearch = new SearchDropdown({
+                            container: tagsContainer,
+                            placeholder: 'Search for tags...',
+                            name: 'category_id',
+                            searchUrl: '/sales_management/search/tags',
+                            displayField: 'name',
+                            onSelect: function(tag) {
+                                console.log('Tag selected:', tag);
+                            },
+                            onClear: function() {
+                                console.log('Tag cleared');
+                            }
+                        });
+                    }
+
+                    // Handle form submission
+                    const submitBtn = document.getElementById('submitBtn');
+                    if (submitBtn) {
+                        submitBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            
+                            const nameField = document.querySelector('input[name="name"]');
+                            if (!nameField.value.trim()) {
+                                alert('Please enter a name');
+                                nameField.focus();
+                                return;
+                            }
+                            
+                            submitForm();
+                        });
+                    }
+
+                    // Initialize sidebar menu active state
+                    const menuItems = document.querySelectorAll("#sidebarMenu a");
+                    const currentPath = window.location.pathname;
+                    menuItems.forEach(function(item) {
+                        item.classList.remove("active");
+                        if (item.getAttribute("href") === currentPath) {
+                            item.classList.add("active");
+                        }
+                    });
+
+                    // Initialize contact type visibility
+                    toggleContactType();
+                });
+
+                // Close wizard when clicking outside
+                const contactWizard = document.getElementById('contactWizard');
+                if (contactWizard) {
+                    contactWizard.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            hideContactWizard();
+                        }
+                    });
                 }
             ]]>
             </script>

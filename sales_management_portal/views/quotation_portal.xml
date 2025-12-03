@@ -192,18 +192,19 @@
 
                     /* Order Line Items */
                     .order-line-item {
-                        border: 1px solid #e9ecef;
-                        border-radius: 12px;
-                        padding: 20px;
+                        padding: 15px;
+                        background: #f8f9fa;
+                        border-radius: 10px;
                         margin-bottom: 15px;
-                        background: white;
-                        position: relative;
                     }
 
                     .order-line-item .remove-btn {
-                        top: 15px;
-                        right: 15px;
-                        border-radius: 8px;
+                        margin-left: auto;
+                    }
+
+                    .order-line-item h6 {
+                        color: #2c3e50;
+                        font-weight: 600;
                     }
 
                     /* Form Enhancements */
@@ -325,10 +326,16 @@
                                 <i class="fa fa-tachometer-alt me-2"></i> Dashboard
                             </a>
                             
-                            <!-- Todo Portal - Conditionally visible -->
-                            <t t-if="request.env.user.use_todo_portal">
-                                <a href="/sales_management/todo" class="list-group-item list-group-item-action">
-                                    <i class="fa fa-check-circle me-2"></i> Todo
+                            <!-- Sales Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_sales_portal">
+                                <a href="/sales_management/sales" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-briefcase me-2"></i> Sales
+                                </a>
+                            </t>
+                            <!-- Service Portal - Conditionally visible -->
+                             <t t-if="request.env.user.use_service_portal">
+                                <a href="/sales_management/service" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-concierge-bell me-2"></i> Service
                                 </a>
                             </t>
                             
@@ -688,10 +695,16 @@
                                 <i class="fa fa-tachometer-alt me-2"></i> Dashboard
                             </a>
                             
-                            <!-- Todo Portal - Conditionally visible -->
-                            <t t-if="request.env.user.use_todo_portal">
-                                <a href="/sales_management/todo" class="list-group-item list-group-item-action">
-                                    <i class="fa fa-check-circle me-2"></i> Todo
+                            <!-- Sales Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_sales_portal">
+                                <a href="/sales_management/sales" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-briefcase me-2"></i> Sales
+                                </a>
+                            </t>
+                            <!-- Service Portal - Conditionally visible -->
+                             <t t-if="request.env.user.use_service_portal">
+                                <a href="/sales_management/service" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-concierge-bell me-2"></i> Service
                                 </a>
                             </t>
                             
@@ -735,11 +748,20 @@
                                     <div class="mb-4">
                                         <h5 class="section-header">Basic Information</h5>
                                         <div class="row">
-                                            <div class="col-md-6 mb-3">
+                                            <div class="col-md-4 mb-3">
                                                 <label class="form-label">Customer *</label>
                                                 <div id="customer-search-container"></div>
                                             </div>
-                                            <div class="col-md-6 mb-3">
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label">Pricelist</label>
+                                                <div class="input-group">
+                                                    <input type="text" id="pricelist-display" class="form-control" readonly="readonly" placeholder="Auto-filled from customer"/>
+                                                    <input type="hidden" id="pricelist-id" name="pricelist_id"/>
+                                                    <span class="input-group-text" id="currency-symbol"></span>
+                                                </div>
+                                                <small class="text-muted">Auto-filled from customer's pricelist</small>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
                                                 <label class="form-label">Quotation Date *</label>
                                                 <input type="date" class="form-control" name="date_order" required="required" t-att-value="today"/>
                                             </div>
@@ -788,7 +810,7 @@
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script>
             <![CDATA[
-                // Enhanced Search Dropdown Component
+                // Enhanced Search Dropdown Component for Odoo 19
                 class SearchDropdown {
                     constructor(config) {
                         this.config = config;
@@ -796,7 +818,8 @@
                             searchTerm: "",
                             showSuggestions: false,
                             filteredItems: [],
-                            selectedItem: null
+                            selectedItem: null,
+                            isLoading: false
                         };
                         this.init();
                     }
@@ -808,7 +831,7 @@
 
                     createHTML() {
                         const container = this.config.container;
-                        const placeholder = this.config.placeholder;
+                        const placeholder = this.config.placeholder || 'Search...';
                         const name = this.config.name;
                         
                         container.innerHTML = `
@@ -823,7 +846,7 @@
                                         <i class="fa fa-times"></i>
                                     </button>
                                 </div>
-                                <div class="search-suggestions dropdown-menu w-100" style="display: none;">
+                                <div class="search-suggestions" style="display: none;">
                                     <div class="list-group"></div>
                                 </div>
                             </div>
@@ -851,23 +874,33 @@
                             self.onSearchFocus(); 
                         });
                         
+                        // Blur event with delay to allow click on suggestions
                         this.elements.input.addEventListener('blur', function() { 
                             setTimeout(() => {
                                 self.hideSuggestions();
                             }, 200);
                         });
                         
+                        // Clear button
                         this.elements.clearBtn.addEventListener('click', function() { 
                             self.clearSearch(); 
                         });
                         
-                        // Enter key to select first item
+                        // Keyboard navigation
                         this.elements.input.addEventListener('keydown', function(ev) {
                             if (ev.key === 'Enter') {
                                 ev.preventDefault();
                                 if (self.state.filteredItems.length > 0) {
                                     self.onItemSelect(self.state.filteredItems[0]);
                                 }
+                            } else if (ev.key === 'Escape') {
+                                self.hideSuggestions();
+                            } else if (ev.key === 'ArrowDown') {
+                                ev.preventDefault();
+                                self.focusNextItem();
+                            } else if (ev.key === 'ArrowUp') {
+                                ev.preventDefault();
+                                self.focusPreviousItem();
                             }
                         });
                     }
@@ -879,12 +912,13 @@
                         // Show/hide clear button
                         this.elements.clearBtn.style.display = searchTerm ? 'block' : 'none';
 
-                        if (searchTerm.length >= 1) {
-                            await this.loadSuggestions(searchTerm);
-                            this.showSuggestions();
-                        } else if (searchTerm.length === 0) {
-                            // When cleared, show all items
+                        // If field is cleared manually, clear the hidden input
+                        if (searchTerm.length === 0) {
+                            this.elements.hiddenInput.value = '';
                             await this.loadAllItems();
+                            this.showSuggestions();
+                        } else if (searchTerm.length >= 1) {
+                            await this.loadSuggestions(searchTerm);
                             this.showSuggestions();
                         }
                     }
@@ -904,18 +938,40 @@
                     }
 
                     async loadSuggestions(searchTerm) {
+                        if (this.state.isLoading) return;
+                        
+                        this.state.isLoading = true;
+                        this.showLoadingState();
+                        
                         try {
                             const csrfToken = document.querySelector('input[name="csrf_token"]').value;
                             
-                            const response = await fetch(this.config.searchUrl, {
+                            // Prepare request data
+                            const requestData = {
+                                jsonrpc: "2.0",
+                                method: "call",
+                                params: {
+                                    search_term: searchTerm
+                                }
+                            };
+                            
+                            // Check if we need to include category_id in the request
+                            if (this.config.searchUrl.includes('products_by_category')) {
+                                // Extract category_id from URL if present
+                                const url = new URL(this.config.searchUrl, window.location.origin);
+                                const categoryId = url.searchParams.get('category_id');
+                                if (categoryId) {
+                                    requestData.params.category_id = categoryId;
+                                }
+                            }
+                            
+                            const response = await fetch(this.config.searchUrl.split('?')[0], { // Remove query params from URL
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
                                     'X-CSRF-TOKEN': csrfToken
                                 },
-                                body: JSON.stringify({
-                                    search_term: searchTerm
-                                })
+                                body: JSON.stringify(requestData)
                             });
                             
                             if (!response.ok) {
@@ -923,58 +979,82 @@
                             }
                             
                             const data = await response.json();
-                            this.state.filteredItems = data.items || [];
+                            
+                            // Handle Odoo JSON-RPC response format
+                            if (data.result) {
+                                this.state.filteredItems = data.result.items || [];
+                            } else if (data.items) {
+                                this.state.filteredItems = data.items || [];
+                            } else {
+                                this.state.filteredItems = [];
+                            }
+                            
                             this.renderSuggestions();
                             
                         } catch (error) {
                             console.error('Error loading suggestions:', error);
                             this.state.filteredItems = [];
                             this.renderSuggestions();
+                        } finally {
+                            this.state.isLoading = false;
                         }
                     }
 
+                    showLoadingState() {
+                        this.elements.list.innerHTML = '<div class="list-group-item text-center text-muted"><i class="fa fa-spinner fa-spin me-2"></i>Loading...</div>';
+                    }
+
                     renderSuggestions() {
-                        const displayField = this.config.displayField;
+                        const displayField = this.config.displayField || 'name';
                         const secondaryField = this.config.secondaryField;
                         this.elements.list.innerHTML = '';
 
                         if (this.state.filteredItems.length === 0) {
-                            this.elements.list.innerHTML = '<div class="list-group-item text-muted text-center">No results found</div>';
+                            this.elements.list.innerHTML = '<div class="list-group-item text-muted text-center"><i class="fa fa-search me-2"></i>No results found</div>';
                             return;
                         }
 
                         const self = this;
-                        this.state.filteredItems.forEach(function(item) {
+                        this.state.filteredItems.forEach(function(item, index) {
                             const itemElement = document.createElement('button');
                             itemElement.type = 'button';
                             itemElement.className = 'list-group-item list-group-item-action';
+                            itemElement.setAttribute('data-index', index);
                             
                             let secondaryHtml = '';
                             if (secondaryField && item[secondaryField]) {
-                                secondaryHtml = '<div class="text-muted small">' + item[secondaryField] + '</div>';
+                                secondaryHtml = '<div class="text-muted small">' + self.escapeHtml(item[secondaryField]) + '</div>';
+                            }
+                            
+                            let typeHtml = '';
+                            if (item.type) {
+                                typeHtml = '<span class="badge bg-secondary">' + self.escapeHtml(item.type) + '</span>';
                             }
                             
                             itemElement.innerHTML = `
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="fw-bold">${item[displayField]}</div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">${self.escapeHtml(item[displayField])}</div>
                                         ${secondaryHtml}
                                     </div>
-                                    <div class="text-muted small">${item.type || ''}</div>
+                                    ${typeHtml}
                                 </div>
                             `;
+                            
                             itemElement.addEventListener('click', function() { 
                                 self.onItemSelect(item); 
                             });
+                            
                             self.elements.list.appendChild(itemElement);
                         });
                     }
 
                     onItemSelect(item) {
                         this.state.selectedItem = item;
-                        this.state.searchTerm = item[this.config.displayField];
+                        this.state.searchTerm = item[this.config.displayField || 'name'];
                         this.elements.input.value = this.state.searchTerm;
                         this.elements.hiddenInput.value = item.id;
+                        this.elements.clearBtn.style.display = 'block';
                         this.hideSuggestions();
 
                         // Call custom callback if provided
@@ -991,6 +1071,9 @@
                         this.elements.hiddenInput.value = "";
                         this.elements.clearBtn.style.display = 'none';
                         this.hideSuggestions();
+                        
+                        // Focus back on input
+                        this.elements.input.focus();
 
                         // Call custom callback if provided
                         if (this.config.onClear) {
@@ -1004,6 +1087,40 @@
 
                     hideSuggestions() {
                         this.elements.suggestions.style.display = 'none';
+                    }
+
+                    focusNextItem() {
+                        const items = this.elements.list.querySelectorAll('.list-group-item');
+                        if (items.length === 0) return;
+                        
+                        const activeItem = this.elements.list.querySelector('.list-group-item:focus');
+                        if (!activeItem) {
+                            items[0].focus();
+                        } else {
+                            const currentIndex = parseInt(activeItem.getAttribute('data-index'));
+                            if (currentIndex < items.length - 1) {
+                                items[currentIndex + 1].focus();
+                            }
+                        }
+                    }
+
+                    focusPreviousItem() {
+                        const items = this.elements.list.querySelectorAll('.list-group-item');
+                        if (items.length === 0) return;
+                        
+                        const activeItem = this.elements.list.querySelector('.list-group-item:focus');
+                        if (activeItem) {
+                            const currentIndex = parseInt(activeItem.getAttribute('data-index'));
+                            if (currentIndex > 0) {
+                                items[currentIndex - 1].focus();
+                            }
+                        }
+                    }
+
+                    escapeHtml(text) {
+                        const div = document.createElement('div');
+                        div.textContent = text;
+                        return div.innerHTML;
                     }
 
                     // Public methods
@@ -1022,71 +1139,278 @@
                     }
                 }
 
+                // Global variables
                 let customerSearch;
+                let categorySearches = {};
                 let productSearches = {};
                 let orderLineCount = 0;
+                let currentPricelistId = null;
+                let currentCurrencySymbol = '$';
 
-                document.addEventListener("DOMContentLoaded", function () {
-                    const menuItems = document.querySelectorAll("#sidebarMenu a");
-                    const currentPath = window.location.pathname;
-
-                    // Initialize search dropdowns
-                    customerSearch = new SearchDropdown({
-                        container: document.getElementById('customer-search-container'),
-                        placeholder: 'Search for customer...',
-                        name: 'partner_id',
-                        searchUrl: '/sales_management/search/customers',
-                        displayField: 'name',
-                        secondaryField: 'email'
-                    });
-
-                    // Add first order line by default
-                    addOrderLine();
-
-                    // Initialize sidebar menu active state
-                    menuItems.forEach(function(item) {
-                        item.classList.remove("active");
-                        if (item.getAttribute("href") === currentPath) {
-                            item.classList.add("active");
+                // Function to update pricelist display
+                function updatePricelistDisplay(customerData) {
+                    const pricelistDisplay = document.getElementById('pricelist-display');
+                    const pricelistIdInput = document.getElementById('pricelist-id');
+                    const currencySymbol = document.getElementById('currency-symbol');
+                    
+                    if (customerData && customerData.pricelist_name) {
+                        pricelistDisplay.value = customerData.pricelist_name;
+                        currentPricelistId = customerData.pricelist_id;
+                        pricelistIdInput.value = currentPricelistId;
+                        
+                        // Update currency symbol
+                        if (customerData.pricelist_id) {
+                            // Fetch detailed pricelist info
+                            fetchPricelistDetails(customerData.pricelist_id);
                         }
-                    });
-                });
+                    } else {
+                        pricelistDisplay.value = '';
+                        currentPricelistId = null;
+                        pricelistIdInput.value = '';
+                        currencySymbol.textContent = '';
+                    }
+                }
 
+                // Function to fetch pricelist details
+                async function fetchPricelistDetails(pricelistId) {
+                    try {
+                        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+                        
+                        const response = await fetch('/sales_management/quotation/get-customer-pricelist', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify({
+                                jsonrpc: "2.0",
+                                method: "call",
+                                params: {
+                                    customer_id: customerSearch.getValue().id
+                                }
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.result) {
+                            const pricelistInfo = data.result;
+                            const currencySymbol = document.getElementById('currency-symbol');
+                            if (pricelistInfo.currency_symbol) {
+                                currencySymbol.textContent = pricelistInfo.currency_symbol;
+                                currentCurrencySymbol = pricelistInfo.currency_symbol;
+                            }
+                        }
+                        
+                    } catch (error) {
+                        console.error('Error fetching pricelist details:', error);
+                    }
+                }
+
+                // Function to get product price from pricelist
+                async function getProductPriceFromPricelist(productId, lineElement) {
+                    if (!currentPricelistId || !productId) {
+                        return null;
+                    }
+                    
+                    try {
+                        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+                        const quantityInput = lineElement.querySelector('.quantity-input');
+                        const quantity = quantityInput ? parseFloat(quantityInput.value) || 1 : 1;
+                        
+                        const response = await fetch('/sales_management/quotation/get-product-price-pricelist', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            body: JSON.stringify({
+                                jsonrpc: "2.0",
+                                method: "call",
+                                params: {
+                                    product_id: productId,
+                                    pricelist_id: currentPricelistId,
+                                    quantity: quantity
+                                }
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.result && data.result.price) {
+                            return data.result;
+                        } else if (data.price) {
+                            return data;
+                        }
+                        
+                        return null;
+                        
+                    } catch (error) {
+                        console.error('Error getting product price from pricelist:', error);
+                        return null;
+                    }
+                }
+
+                // Function to update all product prices when pricelist changes
+                async function updateAllProductPrices() {
+                    if (!currentPricelistId) return;
+                    
+                    const orderLines = document.querySelectorAll('.order-line-item');
+                    
+                    for (const line of orderLines) {
+                        const productHiddenInput = line.querySelector('input[name="product_id[]"]');
+                        const priceInput = line.querySelector('.price-input');
+                        const amountDisplay = line.querySelector('.amount-display');
+                        const quantityInput = line.querySelector('.quantity-input');
+                        
+                        if (productHiddenInput && productHiddenInput.value) {
+                            const productId = productHiddenInput.value;
+                            const priceData = await getProductPriceFromPricelist(productId, line);
+                            
+                            if (priceData) {
+                                priceInput.value = parseFloat(priceData.price || 0).toFixed(2);
+                                
+                                if (priceData.currency_symbol) {
+                                    currentCurrencySymbol = priceData.currency_symbol;
+                                }
+                                
+                                // Update currency symbol in displays
+                                const currencySymbols = document.querySelectorAll('#currency-symbol');
+                                currencySymbols.forEach(symbol => {
+                                    symbol.textContent = currentCurrencySymbol;
+                                });
+                                
+                                // Update amount display
+                                const quantity = parseFloat(quantityInput.value) || 0;
+                                const total = (priceData.price || 0) * quantity;
+                                amountDisplay.value = currentCurrencySymbol + total.toFixed(2);
+                                
+                                // Show/hide discount info
+                                updateDiscountInfo(priceInput, priceData);
+                            }
+                        }
+                    }
+                    
+                    calculateTotalAmount();
+                }
+
+                // Function to update discount info display
+                function updateDiscountInfo(priceInput, priceData) {
+                    // Remove existing discount info
+                    const existingDiscount = priceInput.parentNode.querySelector('.discount-info');
+                    if (existingDiscount) {
+                        existingDiscount.remove();
+                    }
+                    
+                    // Add new discount info if applicable
+                    if (priceData.has_discount) {
+                        const discountInfo = document.createElement('small');
+                        discountInfo.className = 'discount-info text-success d-block mt-1';
+                        discountInfo.innerHTML = `<i class="fa fa-tag me-1"></i>${priceData.discount_percentage.toFixed(1)}% discount applied`;
+                        priceInput.parentNode.appendChild(discountInfo);
+                    }
+                }
+
+                // Add order line
                 function addOrderLine() {
                     const container = document.getElementById('order-lines-container');
                     const lineId = 'order-line-' + orderLineCount;
                     
                     const newLine = document.createElement('div');
-                    newLine.className = 'order-line-item';
+                    newLine.className = 'order-line-item mb-4 border-bottom pb-4';
                     newLine.id = lineId;
                     
-                    // Create product search container for this line
+                    // Create category and product search containers for this line
+                    const categorySearchContainerId = 'category-search-' + orderLineCount;
                     const productSearchContainerId = 'product-search-' + orderLineCount;
                     
                     newLine.innerHTML = 
-                        '<button type="button" class="btn btn-danger btn-sm remove-btn" onclick="removeOrderLine(\'' + lineId + '\')">' +
-                            '<i class="fa fa-trash"></i>' +
-                        '</button>' +
+                        '<div class="d-flex justify-content-between align-items-center mb-3">' +
+                            '<h6 class="mb-0">Product Line ' + (orderLineCount + 1) + '</h6>' +
+                            '<button type="button" class="btn btn-danger btn-sm remove-btn" onclick="removeOrderLine(\'' + lineId + '\')">' +
+                                '<i class="fa fa-trash me-1"></i>Remove' +
+                            '</button>' +
+                        '</div>' +
                         '<div class="row">' +
-                            '<div class="col-md-4 mb-3">' +
+                            '<div class="col-md-3 mb-3">' +
+                                '<label class="form-label">Category</label>' +
+                                '<div id="' + categorySearchContainerId + '"></div>' +
+                                '<small class="text-muted">Select to filter products</small>' +
+                            '</div>' +
+                            '<div class="col-md-3 mb-3">' +
                                 '<label class="form-label">Product *</label>' +
                                 '<div id="' + productSearchContainerId + '"></div>' +
+                                '<small class="text-muted">Filtered by selected category</small>' +
                             '</div>' +
                             '<div class="col-md-2 mb-3">' +
                                 '<label class="form-label">Quantity *</label>' +
                                 '<input type="number" class="form-control quantity-input" name="quantity[]" value="1" min="1" step="1" required="required" onchange="calculateLineTotal(this)"/>' +
                             '</div>' +
-                            '<div class="col-md-3 mb-3">' +
+                            '<div class="col-md-2 mb-3">' +
                                 '<label class="form-label">Unit Price</label>' +
                                 '<input type="number" class="form-control price-input" name="price_unit[]" readonly="readonly" step="0.01"/>' +
                             '</div>' +
-                            '<div class="col-md-3 mb-3">' +
+                            '<div class="col-md-2 mb-3">' +
                                 '<label class="form-label">Amount</label>' +
-                                '<input type="text" class="form-control amount-display" readonly="readonly" value="$0.00"/>' +
+                                '<input type="text" class="form-control amount-display" readonly="readonly" value="' + currentCurrencySymbol + '0.00"/>' +
                             '</div>' +
                         '</div>';
                     
                     container.appendChild(newLine);
+                    
+                    // Initialize category search for this line
+                    const categorySearch = new SearchDropdown({
+                        container: document.getElementById(categorySearchContainerId),
+                        placeholder: 'Search for category...',
+                        name: 'category_id[]',
+                        searchUrl: '/sales_management/search/categories',
+                        displayField: 'name',
+                        onSelect: function(category) {
+                            const lineDiv = document.getElementById(categorySearchContainerId).closest('.order-line-item');
+                            const productSearchContainerId = lineDiv.querySelector('div[id^="product-search-"]').id;
+                            const productSearch = productSearches[productSearchContainerId];
+                            
+                            if (productSearch) {
+                                // Clear current product selection
+                                productSearch.clear();
+                                
+                                // Update product search to filter by this category
+                                productSearch.config.searchUrl = '/sales_management/search/products_by_category';
+                                productSearch.config.searchUrl = '/sales_management/search/products_by_category?category_id=' + category.id;
+                                
+                                // Show placeholder text about filtering
+                                const productInput = document.getElementById(productSearchContainerId).querySelector('.search-dropdown-input');
+                                if (productInput) {
+                                    productInput.placeholder = 'Products in: ' + category.name;
+                                }
+                            }
+                        },
+                        onClear: function() {
+                            const lineDiv = document.getElementById(categorySearchContainerId).closest('.order-line-item');
+                            const productSearchContainerId = lineDiv.querySelector('div[id^="product-search-"]').id;
+                            const productSearch = productSearches[productSearchContainerId];
+                            
+                            if (productSearch) {
+                                // Reset product search to show all products
+                                productSearch.clear();
+                                productSearch.config.searchUrl = '/sales_management/search/products';
+                                
+                                // Reset placeholder
+                                const productInput = document.getElementById(productSearchContainerId).querySelector('.search-dropdown-input');
+                                if (productInput) {
+                                    productInput.placeholder = 'Search for product...';
+                                }
+                            }
+                        }
+                    });
                     
                     // Initialize product search for this line
                     const productSearch = new SearchDropdown({
@@ -1096,28 +1420,83 @@
                         searchUrl: '/sales_management/search/products',
                         displayField: 'name',
                         secondaryField: 'default_code',
-                        onSelect: function(product) {
+                        onSelect: async function(product) {
                             const row = document.getElementById(productSearchContainerId).closest('.row');
                             const priceInput = row.querySelector('.price-input');
                             const quantityInput = row.querySelector('.quantity-input');
+                            const lineElement = row.closest('.order-line-item');
                             
-                            priceInput.value = parseFloat(product.list_price).toFixed(2);
+                            // Get price from pricelist if available
+                            if (currentPricelistId) {
+                                const priceData = await getProductPriceFromPricelist(product.id, lineElement);
+                                
+                                if (priceData) {
+                                    priceInput.value = parseFloat(priceData.price || 0).toFixed(2);
+                                    
+                                    if (priceData.currency_symbol) {
+                                        currentCurrencySymbol = priceData.currency_symbol;
+                                    }
+                                    
+                                    // Update discount info
+                                    updateDiscountInfo(priceInput, priceData);
+                                } else {
+                                    // Fallback to list price
+                                    priceInput.value = parseFloat(product.list_price || 0).toFixed(2);
+                                }
+                            } else {
+                                // Use list price if no pricelist
+                                priceInput.value = parseFloat(product.list_price || 0).toFixed(2);
+                            }
+                            
                             calculateLineTotal(quantityInput);
+                            
+                            // If category is not set, auto-fill it from product
+                            const categorySearchContainerId = 'category-search-' + productSearchContainerId.split('-')[2];
+                            const categorySearch = categorySearches[categorySearchContainerId];
+                            
+                            if (categorySearch && !categorySearch.getValue() && product.category_id) {
+                                // Auto-fill category from product
+                                categorySearch.setValue({
+                                    id: product.category_id,
+                                    name: product.category_name || 'Unknown Category'
+                                });
+                            }
+                            
+                            console.log('Product selected:', product);
+                        },
+                        onClear: function() {
+                            const row = document.getElementById(productSearchContainerId).closest('.row');
+                            const priceInput = row.querySelector('.price-input');
+                            
+                            // Clear price and any discount info
+                            priceInput.value = '';
+                            const discountInfo = priceInput.parentNode.querySelector('.discount-info');
+                            if (discountInfo) {
+                                discountInfo.remove();
+                            }
+                            
+                            console.log('Product search cleared');
                         }
                     });
                     
-                    // Store reference to product search
+                    // Store references to searches
+                    categorySearches[categorySearchContainerId] = categorySearch;
                     productSearches[productSearchContainerId] = productSearch;
                     
                     orderLineCount++;
                     calculateTotalAmount();
                 }
 
+                // Remove order line
                 function removeOrderLine(lineId) {
                     const lineElement = document.getElementById(lineId);
                     if (lineElement) {
-                        // Remove product search reference
-                        const productSearchContainerId = 'product-search-' + lineId.split('-')[2];
+                        // Remove search references
+                        const lineNumber = lineId.split('-')[2];
+                        const categorySearchContainerId = 'category-search-' + lineNumber;
+                        const productSearchContainerId = 'product-search-' + lineNumber;
+                        
+                        delete categorySearches[categorySearchContainerId];
                         delete productSearches[productSearchContainerId];
                         
                         lineElement.remove();
@@ -1125,6 +1504,7 @@
                     }
                 }
 
+                // Calculate line total
                 function calculateLineTotal(inputElement) {
                     const row = inputElement.closest('.row');
                     const priceInput = row.querySelector('.price-input');
@@ -1135,43 +1515,96 @@
                     const quantity = parseFloat(quantityInput.value) || 0;
                     const total = price * quantity;
                     
-                    amountDisplay.value = '$' + total.toFixed(2);
+                    amountDisplay.value = currentCurrencySymbol + total.toFixed(2);
                     calculateTotalAmount();
                 }
 
+                // Calculate total amount
                 function calculateTotalAmount() {
                     const amountDisplays = document.querySelectorAll('.amount-display');
                     let total = 0;
                     
                     amountDisplays.forEach(function(display) {
-                        const value = display.value.replace('$', '');
+                        const value = display.value.replace(currentCurrencySymbol, '');
                         total += parseFloat(value) || 0;
                     });
                     
-                    document.getElementById('total-amount').textContent = '$' + total.toFixed(2);
+                    document.getElementById('total-amount').textContent = currentCurrencySymbol + total.toFixed(2);
                 }
+
+                // Initialize on DOM ready
+                document.addEventListener("DOMContentLoaded", function () {
+                    console.log('Quotation form loaded - initializing search dropdowns');
+                    
+                    // Initialize Customer Search Dropdown
+                    const customerContainer = document.getElementById('customer-search-container');
+                    if (customerContainer) {
+                        customerSearch = new SearchDropdown({
+                            container: customerContainer,
+                            placeholder: 'Search for customer...',
+                            name: 'partner_id',
+                            searchUrl: '/sales_management/search/customers',
+                            displayField: 'name',
+                            secondaryField: 'phone',
+                            onSelect: function(customer) {
+                                console.log('Customer selected:', customer);
+                                updatePricelistDisplay(customer);
+                                
+                                // Update all existing product prices based on new pricelist
+                                updateAllProductPrices();
+                            },
+                            onClear: function() {
+                                console.log('Customer cleared');
+                                updatePricelistDisplay(null);
+                            }
+                        });
+                    }
+
+                    // Add first order line by default
+                    addOrderLine();
+
+                    // Initialize sidebar menu active state
+                    const menuItems = document.querySelectorAll("#sidebarMenu a");
+                    const currentPath = window.location.pathname;
+                    menuItems.forEach(function(item) {
+                        item.classList.remove("active");
+                        if (item.getAttribute("href") === currentPath) {
+                            item.classList.add("active");
+                        }
+                    });
+                });
 
                 // Form validation
                 document.getElementById('quotationForm').addEventListener('submit', function(e) {
-                    const customer = customerSearch.getValue();
+                    e.preventDefault();
+                    
+                    // Validate customer selection
+                    const customer = customerSearch ? customerSearch.getValue() : null;
                     if (!customer) {
-                        e.preventDefault();
                         alert('Please select a customer.');
-                        customerSearch.elements.input.focus();
+                        if (customerSearch && customerSearch.elements.input) {
+                            customerSearch.elements.input.focus();
+                        }
                         return;
                     }
                     
+                    // Validate pricelist
+                    if (!currentPricelistId) {
+                        alert('No pricelist found for the selected customer. Please contact administrator.');
+                        return;
+                    }
+                    
+                    // Validate at least one product is selected
                     const productInputs = document.querySelectorAll('input[name="product_id[]"]');
                     let hasProducts = false;
                     
                     productInputs.forEach(function(input) {
-                        if (input.value) {
+                        if (input.value && input.value.trim() !== '') {
                             hasProducts = true;
                         }
                     });
                     
                     if (!hasProducts) {
-                        e.preventDefault();
                         alert('Please add at least one product to the quotation.');
                         return;
                     }
@@ -1190,7 +1623,6 @@
                     });
                     
                     if (!allValid) {
-                        e.preventDefault();
                         alert('Please enter valid quantities for all products.');
                         return;
                     }
@@ -1201,7 +1633,57 @@
                     submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Creating...';
                     submitBtn.disabled = true;
                     
-                    // Allow form submission to proceed
+                    // Collect all form data including product prices
+                    const formData = new FormData(this);
+                    
+                    // Add pricelist_id to form data
+                    if (currentPricelistId) {
+                        formData.append('pricelist_id', currentPricelistId);
+                    }
+                    
+                    // Add price_unit values for each product line
+                    const priceInputs = document.querySelectorAll('input[name="price_unit[]"]');
+                    priceInputs.forEach((input, index) => {
+                        formData.append('price_unit[]', input.value || '0');
+                    });
+                    
+                    // Debug: Show what's being submitted
+                    console.log('Submitting form data:');
+                    for (let pair of formData.entries()) {
+                        console.log(pair[0] + ': ' + pair[1]);
+                    }
+                    
+                    // Submit the form via fetch
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('input[name="csrf_token"]').value
+                        }
+                    })
+                    .then(response => {
+                        if (response.redirected) {
+                            // If redirected to success page
+                            window.location.href = response.url;
+                        } else if (response.ok) {
+                            return response.text().then(html => {
+                                // Check if there's an error in the response
+                                if (html.includes('error')) {
+                                    throw new Error('Form submission error');
+                                }
+                                // Otherwise redirect to success
+                                window.location.href = '/sales_management/quotation?success=1';
+                            });
+                        } else {
+                            throw new Error('Network response was not ok: ' + response.status);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('There was an error creating the quotation. Please try again.');
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    });
                 });
             ]]>
             </script>

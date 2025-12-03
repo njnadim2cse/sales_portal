@@ -5,3 +5,5 @@ access_sale_order_portal,sale.order.portal,sale.model_sale_order,base.group_user
 access_sale_order_line_portal,sale.order.line.portal,sale.model_sale_order_line,base.group_user,1,1,1,0
 access_product_template_portal,product.template.portal,product.model_product_template,base.group_user,1,0,0,0
 access_product_category_portal,product.category.portal,product.model_product_category,base.group_user,1,0,0,0
+access_task_management_portal,task.management.portal,bdcalling_task_management.model_task_management,base.group_portal,1,1,1,0
+access_task_purpose_portal,task.purpose.portal,bdcalling_task_management.model_task_purpose,base.group_portal,1,1,1,0

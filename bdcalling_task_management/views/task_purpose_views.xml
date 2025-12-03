@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- LIST VIEW for Task Purpose -->
+    <record id="view_task_purpose_list" model="ir.ui.view">
+        <field name="name">task.purpose.list</field>
+        <field name="model">task.purpose</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- FORM VIEW for Task Purpose -->
+    <record id="view_task_purpose_form" model="ir.ui.view">
+        <field name="name">task.purpose.form</field>
+        <field name="model">task.purpose</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" placeholder="e.g., Meeting, Demo, Training"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW for Task Purpose -->
+    <record id="view_task_purpose_search" model="ir.ui.view">
+        <field name="name">task.purpose.search</field>
+        <field name="model">task.purpose</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACTION for Task Purpose -->
+    <record id="action_task_purpose" model="ir.actions.act_window">
+        <field name="name">Task Purpose</field>
+        <field name="res_model">task.purpose</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_task_purpose_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first task purpose
+            </p>
+        </field>
+    </record>
+
+</odoo>

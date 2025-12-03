@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_order_form_inherit_category" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.category</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Add Category field BEFORE product_template_id in order lines -->
+          <!-- <field name="product_template_id" position="before">
+                <field name="product_category_id" string="Category"/>
+                
+            </field>  -->
+
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_qty']" position="after">
+                <field name="test_per_unit" readonly="1"/>
+                <field name="total_test" readonly="1"/>
+                <field name="price_per_test" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']//list//field[@name='product_template_id']" position="before">
+               <field name="product_category_id" options="{'no_create': True}" optional="show"/>
+           </xpath>
+<!--  Add domain to product_template_id in list view  -->
+            <xpath expr="//field[@name='order_line']//list//field[@name='product_template_id']" position="attributes">
+               <attribute name="domain">[('categ_id', '=', product_category_id)] if product_category_id else []</attribute>
+            </xpath>
+            <!--  Add domain to product_id in list view  -->
+            <xpath expr="//field[@name='order_line']//list//field[@name='product_id']" position="attributes">
+               <attribute name="domain">[('categ_id', '=', product_category_id)] if product_category_id else []</attribute>
+            </xpath>
+            <!--  Add category field before product_id in form view  -->
+            <xpath expr="//field[@name='order_line']//form//field[@name='product_id']" position="before">
+               <field name="product_category_id" options="{'no_create': True}"/>
+            </xpath>
+            <!--  Add domain to product_id in form view  -->
+            <xpath expr="//field[@name='order_line']//form//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('categ_id', '=', product_category_id)] if product_category_id else []</attribute>
+            </xpath>
+                        
+            
+           
+         
+        </field>
+    
+    </record>
+    <!-- Add to account.move.line tree view -->
+      
+        
+</odoo>

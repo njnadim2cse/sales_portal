@@ -1,0 +1,1375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Enhanced Task List with Advanced Search & Filters -->
+
+    <!-- Fully Responsive Task List Template -->
+    <template id="task_list_template" name="Task List">
+        <t t-call="website.layout">
+            <t t-set="head">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+                <style>
+                    /* Sidebar Styles - MATCHES DASHBOARD */
+                    .dashboard-sidebar {
+                        position: fixed;
+                        top: 70px;
+                        left: 0;
+                        height: calc(100vh - 70px);
+                        width: 280px;
+                        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                        border-right: none;
+                        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+                        z-index: 1000;
+                        padding-top: 20px;
+                        overflow-y: auto;
+                        transition: all 0.3s ease;
+                    }
+
+                    .dashboard-sidebar .sidebar-header {
+                        padding: 0 25px 20px;
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                        margin-bottom: 15px;
+                    }
+
+                    .dashboard-sidebar .sidebar-header h4 {
+                        color: white;
+                        font-weight: 600;
+                        margin: 0;
+                        font-size: 1.2rem;
+                    }
+
+                    .dashboard-sidebar .list-group-item {
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px 20px;
+                        margin: 4px 15px;
+                        font-weight: 500;
+                        color: rgba(255,255,255,0.9);
+                        background: transparent;
+                        transition: all 0.3s ease;
+                        border-left: 3px solid transparent;
+                    }
+
+                    .dashboard-sidebar .list-group-item:hover {
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        transform: translateX(5px);
+                    }
+
+                    .dashboard-sidebar .list-group-item.active {
+                        background: rgba(255,255,255,0.15);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    }
+
+                    .dashboard-sidebar .list-group-item i {
+                        width: 20px;
+                        text-align: center;
+                        margin-right: 12px;
+                        font-size: 1.1rem;
+                    }
+
+                    .dashboard-content {
+                        margin-left: 300px;
+                        padding: 30px;
+                        min-height: calc(100vh - 70px);
+                        background: #f8fafc;
+                        width: calc(100% - 300px);
+                        overflow-x: hidden; /* Prevent horizontal scroll */
+                    }
+
+                    /* Success Message */
+                    .success-message {
+                        position: fixed;
+                        top: 80px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        z-index: 9999;
+                        min-width: 400px;
+                        max-width: 600px;
+                        background: linear-gradient(135deg, #27ae60, #2ecc71);
+                        color: white;
+                        padding: 20px 30px;
+                        border-radius: 12px;
+                        box-shadow: 0 10px 40px rgba(39, 174, 96, 0.4);
+                        animation: slideDown 0.5s ease-out;
+                    }
+
+                    .success-message i {
+                        font-size: 1.5rem;
+                        margin-right: 15px;
+                    }
+
+                    @keyframes slideDown {
+                        from {
+                            opacity: 0;
+                            transform: translateX(-50%) translateY(-30px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translateX(-50%) translateY(0);
+                        }
+                    }
+
+                    /* Card Styles - MATCHES DASHBOARD */
+                    .card {
+                        border: none;
+                        border-radius: 16px;
+                        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                        margin-bottom: 25px;
+                        overflow: hidden;
+                        width: 100%;
+                    }
+
+                    .card-header {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        padding: 20px 25px;
+                        border-radius: 16px 16px 0 0;
+                    }
+
+                    .card-header h4 {
+                        margin: 0;
+                        font-weight: 600;
+                    }
+
+                    /* Filter Panel */
+                    .filter-panel {
+                        background: white;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-bottom: 20px;
+                        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+                        width: 100%;
+                        overflow: visible;
+                    }
+
+                    /* Desktop Table Styles - FIXED WIDTH */
+                    .table-responsive {
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                        width: 100%;
+                    }
+
+                    .desktop-table {
+                        width: 100%;
+                        min-width: 600px; /* Minimum width for table */
+                    }
+
+                    .desktop-table thead th {
+                        background: #2c3e50;
+                        color: white;
+                        border: none;
+                        padding: 16px 12px;
+                        font-weight: 600;
+                        font-size: 0.9rem;
+                        white-space: nowrap;
+                    }
+
+                    .desktop-table tbody tr {
+                        transition: all 0.3s ease;
+                    }
+
+                    .desktop-table tbody tr:hover {
+                        background: #f8f9fa;
+                    }
+
+                    .desktop-table tbody td {
+                        padding: 16px 12px;
+                        vertical-align: middle;
+                        border-bottom: 1px solid #f1f3f4;
+                    }
+
+                    /* Mobile Card Layout */
+                    .mobile-cards {
+                        display: none;
+                    }
+
+                    .task-card {
+                        background: white;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-bottom: 15px;
+                        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+                        transition: all 0.3s ease;
+                        width: 100%;
+                    }
+
+                    .task-card:hover {
+                        box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+                    }
+
+                    .task-card-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: start;
+                        margin-bottom: 15px;
+                        padding-bottom: 15px;
+                        border-bottom: 2px solid #f1f3f4;
+                    }
+
+                    .task-card-title {
+                        font-size: 1.1rem;
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin: 0;
+                    }
+
+                    .task-card-body {
+                        display: grid;
+                        grid-template-columns: 1fr;
+                        gap: 12px;
+                    }
+
+                    .task-info-item {
+                        display: flex;
+                        align-items: center;
+                        padding: 8px 0;
+                    }
+
+                    .task-info-label {
+                        font-weight: 600;
+                        color: #7f8c8d;
+                        min-width: 100px;
+                        font-size: 0.85rem;
+                        text-transform: uppercase;
+                    }
+
+                    .task-info-value {
+                        color: #2c3e50;
+                        font-size: 0.95rem;
+                        word-break: break-word;
+                    }
+
+                    .btn-primary {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border: none;
+                        border-radius: 10px;
+                        padding: 12px 24px;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                    }
+
+                    .btn-primary:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                    }
+
+                    /* Pagination */
+                    .pagination {
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        margin-top: 20px;
+                    }
+
+                    /* Responsive Breakpoints - FIXED FOR NO HORIZONTAL SCROLL */
+                    @media (max-width: 1200px) {
+                        .dashboard-sidebar {
+                            width: 250px;
+                        }
+                        .dashboard-content {
+                            margin-left: 270px;
+                            width: calc(100% - 270px);
+                        }
+                    }
+
+                    @media (max-width: 992px) {
+                        .dashboard-sidebar {
+                            width: 100%;
+                            height: auto;
+                            position: relative;
+                            top: 0;
+                        }
+                        
+                        .dashboard-content {
+                            margin-left: 0;
+                            padding: 20px 15px;
+                            width: 100%;
+                        }
+
+                        /* Switch to card layout on tablets */
+                        .desktop-table {
+                            display: none;
+                        }
+
+                        .mobile-cards {
+                            display: block;
+                        }
+
+                        .success-message {
+                            min-width: 90%;
+                            left: 5%;
+                            transform: none;
+                        }
+                    }
+
+                    @media (max-width: 768px) {
+                        /* Filter Panel - Stack vertically on mobile */
+                        .filter-panel .row {
+                            flex-direction: column;
+                        }
+
+                        .filter-panel .col-md-4,
+                        .filter-panel .col-md-2,
+                        .filter-panel .col-12 {
+                            width: 100%;
+                            margin-bottom: 15px;
+                        }
+
+                        .filter-panel input,
+                        .filter-panel select {
+                            width: 100%;
+                        }
+
+                        /* Page Header */
+                        .page-header-mobile {
+                            flex-direction: column;
+                            align-items: flex-start !important;
+                            gap: 15px;
+                        }
+
+                        .page-header-mobile .btn {
+                            width: 100%;
+                        }
+
+                        /* Card Header */
+                        .card-header h4 {
+                            font-size: 1.1rem;
+                        }
+
+                        /* Task Cards - Better spacing */
+                        .task-card {
+                            padding: 15px;
+                        }
+
+                        .task-card-title {
+                            font-size: 1rem;
+                        }
+
+                        .task-info-label {
+                            min-width: 90px;
+                            font-size: 0.75rem;
+                        }
+
+                        .task-info-value {
+                            font-size: 0.9rem;
+                        }
+
+                        .btn-primary {
+                            padding: 10px 20px;
+                            font-size: 0.9rem;
+                        }
+                    }
+
+                    @media (max-width: 576px) {
+                        .dashboard-content {
+                            padding: 15px 10px;
+                        }
+
+                        .filter-panel {
+                            padding: 15px;
+                        }
+
+                        .card-header {
+                            padding: 15px;
+                        }
+                    }
+                </style>
+            </t>
+
+            <div class="container-fluid p-0">
+                <div class="row g-0">
+                    <!-- Sidebar -->
+                    <div class="dashboard-sidebar">
+                        <div class="sidebar-header">
+                            <h4>Sales Management</h4>
+                        </div>
+                        <div class="list-group" id="sidebarMenu">
+                            <!-- Dashboard - Always visible -->
+                            <a href="/sales_management" class="list-group-item list-group-item-action">
+                                <i class="fa fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                            
+                            <!-- Sales Portal - Conditionally visible -->
+                            <t t-if="use_sales_portal">
+                                <a href="/sales_management/sales" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-briefcase me-2"></i> Sales
+                                </a>
+                            </t>
+                            
+                            <!-- Service Portal - Conditionally visible -->
+                            <t t-if="use_service_portal">
+                                <a href="/sales_management/service" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-concierge-bell me-2"></i> Service
+                                </a>
+                            </t>
+                            
+                            <!-- Contacts Portal - Conditionally visible -->
+                            <t t-if="use_contact_portal">
+                                <a href="/sales_management/contacts" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-users me-2"></i> Contacts
+                                </a>
+                            </t>
+                            
+                            <!-- Quotation Portal - Conditionally visible -->
+                            <t t-if="use_quotation_portal">
+                                <a href="/sales_management/quotation" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-file-invoice-dollar me-2"></i> Quotation
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="dashboard-content">
+                        <!-- Success Message -->
+                        <t t-if="message">
+                            <div class="success-message" id="successMessage">
+                                <i class="fa fa-check-circle"></i>
+                                <strong t-esc="message"/>
+                            </div>
+                        </t>
+
+                        <!-- Page Header -->
+                        <div class="d-flex justify-content-between align-items-center mb-4 page-header-mobile">
+                            <div>
+                                <h2 class="mb-1" t-esc="title"/>
+                                <p class="text-muted mb-0">Manage your <t t-esc="team"/> tasks</p>
+                            </div>
+                            <a t-att-href="'/sales_management/create_task/%s' % team" class="btn btn-primary">
+                                <i class="fa fa-plus me-2"></i>Create Task
+                            </a>
+                        </div>
+
+                        <!-- Search and Filter Panel -->
+                        <div class="filter-panel">
+                            <form method="get" class="row g-3">
+                                <!-- Search Box -->
+                                <div class="col-md-4 col-12">
+                                    <label class="form-label fw-bold">Search</label>
+                                    <input type="search" name="q" class="form-control" 
+                                        placeholder="Search by title, customer, remarks..."
+                                        t-att-value="search or ''"/>
+                                </div>
+
+                                <!-- Date From -->
+                                <div class="col-md-2 col-6">
+                                    <label class="form-label fw-bold">Date From</label>
+                                    <input type="date" name="date_from" class="form-control"
+                                        t-att-value="date_from or ''"/>
+                                </div>
+
+                                <!-- Date To -->
+                                <div class="col-md-2 col-6">
+                                    <label class="form-label fw-bold">Date To</label>
+                                    <input type="date" name="date_to" class="form-control"
+                                        t-att-value="date_to or ''"/>
+                                </div>
+
+                                <!-- Customer Filter -->
+                                <div class="col-md-2 col-12">
+                                    <label class="form-label fw-bold">Customer</label>
+                                    <select name="customer_id" class="form-control">
+                                        <option value="">All Customers</option>
+                                        <t t-foreach="customers" t-as="customer">
+                                            <option t-att-value="customer.id" 
+                                                    t-att-selected="'selected' if customer_id == str(customer.id) else None"
+                                                    t-esc="customer.name"/>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <!-- Purpose Filter -->
+                                <div class="col-md-2 col-12">
+                                    <label class="form-label fw-bold">Purpose</label>
+                                    <select name="purpose_id" class="form-control">
+                                        <option value="">All Purposes</option>
+                                        <t t-foreach="purposes" t-as="purpose">
+                                            <option t-att-value="purpose.id"
+                                                    t-att-selected="'selected' if purpose_id == str(purpose.id) else None"
+                                                    t-esc="purpose.name"/>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fa fa-search me-2"></i>Search
+                                    </button>
+                                    <a t-att-href="'/sales_management/%s' % team" class="btn btn-outline-secondary ms-2">
+                                        <i class="fa fa-times me-2"></i>Clear Filters
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Task List Card -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="mb-0">
+                                    <i class="fa fa-list me-2"></i>Task List 
+                                    <span class="badge bg-light text-dark ms-2" t-esc="task_count"/>
+                                </h4>
+                            </div>
+                            <div class="card-body">
+                                <!-- Desktop Table View -->
+                                <div class="table-responsive">
+                                    <table class="desktop-table table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Customer</th>
+                                                <th>Company</th>
+                                                <th>Purpose</th>
+                                                <th>Visit Date</th>
+                                                <th>Employee</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="tasks" t-as="task">
+                                                <tr>
+                                                    <td>
+                                                        <strong t-esc="task.task_title"/>
+                                                    </td>
+                                                    <td t-esc="task.customer_id.name if task.customer_id else '-'"/>
+                                                    <td t-esc="task.company_id.name if task.company_id else '-'"/>
+                                                    <td t-esc="task.purpose_id.name if task.purpose_id else '-'"/>
+                                                    <td t-esc="task.visit_date.strftime('%Y-%m-%d') if task.visit_date else '-'"/>
+                                                    <td t-esc="task.employee_id.name if task.employee_id else '-'"/>
+                                                    <td>
+                                                        <a t-att-href="'/sales_management/task/%s' % task.id"
+                                                        class="btn btn-sm btn-outline-primary">
+                                                            <i class="fa fa-eye"></i> View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            <t t-if="not tasks">
+                                                <tr>
+                                                    <td colspan="7" class="text-center text-muted py-5">
+                                                        <i class="fa fa-inbox fa-3x mb-3"></i>
+                                                        <p class="mb-2">No tasks found</p>
+                                                        <a t-att-href="'/sales_management/create_task/%s' % team" 
+                                                        class="btn btn-primary">
+                                                            <i class="fa fa-plus me-2"></i>Create your first task
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Mobile Card View -->
+                                <div class="mobile-cards">
+                                    <t t-foreach="tasks" t-as="task">
+                                        <div class="task-card">
+                                            <div class="task-card-header">
+                                                <h5 class="task-card-title" t-esc="task.task_title"/>
+                                                <a t-att-href="'/sales_management/task/%s' % task.id"
+                                                class="btn btn-sm btn-outline-primary">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+                                            </div>
+                                            <div class="task-card-body">
+                                                <div class="task-info-item">
+                                                    <span class="task-info-label">Customer:</span>
+                                                    <span class="task-info-value" t-esc="task.customer_id.name if task.customer_id else '-'"/>
+                                                </div>
+                                                <div class="task-info-item">
+                                                    <span class="task-info-label">Company:</span>
+                                                    <span class="task-info-value" t-esc="task.company_id.name if task.company_id else '-'"/>
+                                                </div>
+                                                <div class="task-info-item">
+                                                    <span class="task-info-label">Purpose:</span>
+                                                    <span class="task-info-value" t-esc="task.purpose_id.name if task.purpose_id else '-'"/>
+                                                </div>
+                                                <div class="task-info-item">
+                                                    <span class="task-info-label">Visit Date:</span>
+                                                    <span class="task-info-value" t-esc="task.visit_date.strftime('%Y-%m-%d') if task.visit_date else '-'"/>
+                                                </div>
+                                                <div class="task-info-item">
+                                                    <span class="task-info-label">Employee:</span>
+                                                    <span class="task-info-value" t-esc="task.employee_id.name if task.employee_id else '-'"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                    <t t-if="not tasks">
+                                        <div class="text-center text-muted py-5">
+                                            <i class="fa fa-inbox fa-3x mb-3"></i>
+                                            <p class="mb-2">No tasks found</p>
+                                            <a t-att-href="'/sales_management/create_task/%s' % team" 
+                                            class="btn btn-primary w-100">
+                                                <i class="fa fa-plus me-2"></i>Create your first task
+                                            </a>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <t t-if="total_pages &gt; 1">
+                            <nav>
+                                <ul class="pagination justify-content-center flex-wrap">
+                                    <t t-foreach="range(1, total_pages + 1)" t-as="page_num">
+                                        <li class="page-item" t-att-class="'active' if page_num == current_page else ''">
+                                            <a class="page-link" t-att-href="'/sales_management/%s/page/%s' % (team, page_num)"
+                                            t-esc="page_num"/>
+                                        </li>
+                                    </t>
+                                </ul>
+                            </nav>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+            <![CDATA[
+                 // Auto-hide success message after 5 seconds
+                document.addEventListener('DOMContentLoaded', function() {
+                    const successMessage = document.getElementById('successMessage');
+                    if (successMessage) {
+                        setTimeout(function() {
+                            successMessage.style.opacity = '0';
+                            successMessage.style.transition = 'opacity 0.5s ease-out';
+                            setTimeout(function() {
+                                successMessage.remove();
+                            }, 500);
+                        }, 5000);
+                    }
+                    
+                    // Highlight active sidebar menu ONLY for list pages (not create pages)
+                    const currentPath = window.location.pathname;
+                    const sidebarLinks = document.querySelectorAll('.dashboard-sidebar a');
+                    
+                    sidebarLinks.forEach(link => {
+                        link.classList.remove('active');
+                        const href = link.getAttribute('href');
+                        
+                        // Only highlight if exact match (not for create_task pages)
+                        if (currentPath === href) {
+                            link.classList.add('active');
+                        }
+                    });
+                });
+            ]]>
+            </script>
+        </t>
+    </template>
+
+    <!-- Task Form (Portal Create) -->
+    <template id="task_form_template" name="Task Form">
+        <t t-call="website.layout">
+            <t t-set="head">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+                <!-- Select2 CSS for Live Search -->
+                <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+                <style>
+                    /* Sidebar Styles - MATCHES DASHBOARD */
+                    .dashboard-sidebar {
+                        position: fixed;
+                        top: 70px;
+                        left: 0;
+                        height: calc(100vh - 70px);
+                        width: 280px;
+                        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                        border-right: none;
+                        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+                        z-index: 1000;
+                        padding-top: 20px;
+                        overflow-y: auto;
+                        transition: all 0.3s ease;
+                    }
+
+                    .dashboard-sidebar .sidebar-header {
+                        padding: 0 25px 20px;
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                        margin-bottom: 15px;
+                    }
+
+                    .dashboard-sidebar .sidebar-header h4 {
+                        color: white;
+                        font-weight: 600;
+                        margin: 0;
+                        font-size: 1.2rem;
+                    }
+
+                    .dashboard-sidebar .list-group-item {
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px 20px;
+                        margin: 4px 15px;
+                        font-weight: 500;
+                        color: rgba(255,255,255,0.9);
+                        background: transparent;
+                        transition: all 0.3s ease;
+                        border-left: 3px solid transparent;
+                        display: flex;
+                        align-items: center;
+                        text-decoration: none;
+                    }
+
+                    .dashboard-sidebar .list-group-item:hover {
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        transform: translateX(5px);
+                    }
+
+                    .dashboard-sidebar .list-group-item.active {
+                        background: rgba(255,255,255,0.15);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    }
+
+                    .dashboard-sidebar .list-group-item i {
+                        width: 20px;
+                        text-align: center;
+                        margin-right: 12px;
+                        font-size: 1.1rem;
+                    }
+
+                    .dashboard-content {
+                        margin-left: 300px;
+                        padding: 30px;
+                        min-height: calc(100vh - 70px);
+                        background: #f8fafc;
+                        width: calc(100% - 300px);
+                        overflow-x: hidden;
+                    }
+
+                    .card {
+                        border: none;
+                        border-radius: 16px;
+                        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                        margin-bottom: 25px;
+                        overflow: hidden;
+                        width: 100%;
+                    }
+
+                    .card-header {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        padding: 20px 25px;
+                        border-radius: 16px 16px 0 0;
+                    }
+
+                    .card-header h4 {
+                        margin: 0;
+                        font-weight: 600;
+                    }
+
+                    .form-label {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin-bottom: 8px;
+                    }
+
+                    .section-header {
+                        color: #2c3e50;
+                        font-weight: 600;
+                        margin-bottom: 20px;
+                        padding-bottom: 12px;
+                        border-bottom: 2px solid #3498db;
+                    }
+
+                    .btn-primary {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border: none;
+                        border-radius: 10px;
+                        padding: 12px 24px;
+                        font-weight: 600;
+                    }
+
+                    /* Form Layout */
+                    .form-container {
+                        max-width: 100%;
+                        overflow: visible;
+                    }
+
+                    .form-container .row {
+                        margin: 0 -10px;
+                    }
+
+                    .form-container .col-md-4,
+                    .form-container .col-md-6,
+                    .form-container .col-12 {
+                        padding: 0 10px;
+                    }
+
+                    /* Select2 Custom Styling */
+                    .select2-container--default .select2-selection--single {
+                        height: 45px;
+                        padding: 8px 12px;
+                        border: 2px solid #e9ecef;
+                        border-radius: 10px;
+                        width: 100%;
+                    }
+
+                    .select2-container--default .select2-selection--single .select2-selection__rendered {
+                        line-height: 28px;
+                        color: #495057;
+                    }
+
+                    .select2-container--default .select2-selection--single .select2-selection__arrow {
+                        height: 43px;
+                    }
+
+                    .select2-dropdown {
+                        border: 2px solid #667eea;
+                        border-radius: 10px;
+                    }
+
+                    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+                        background-color: #667eea;
+                    }
+
+                    /* Responsive Design */
+                    @media (max-width: 1200px) {
+                        .dashboard-sidebar {
+                            width: 250px;
+                        }
+                        .dashboard-content {
+                            margin-left: 270px;
+                            width: calc(100% - 270px);
+                        }
+                    }
+
+                    @media (max-width: 992px) {
+                        .dashboard-sidebar {
+                            width: 100%;
+                            height: auto;
+                            position: relative;
+                            top: 0;
+                        }
+                        
+                        .dashboard-content {
+                            margin-left: 0;
+                            padding: 20px 15px;
+                            width: 100%;
+                        }
+                        
+                        .form-container .col-md-4,
+                        .form-container .col-md-6 {
+                            width: 100%;
+                        }
+                    }
+
+                    @media (max-width: 768px) {
+                        .dashboard-content {
+                            padding: 20px;
+                        }
+                        
+                        .card-header {
+                            padding: 15px;
+                        }
+                        
+                        .section-header {
+                            font-size: 1.1rem;
+                        }
+                        
+                        .form-label {
+                            font-size: 0.9rem;
+                        }
+                    }
+
+                    @media (max-width: 576px) {
+                        .dashboard-content {
+                            padding: 15px 10px;
+                        }
+                        
+                        .card-header h4 {
+                            font-size: 1.1rem;
+                        }
+                        
+                        .btn-primary {
+                            padding: 10px 20px;
+                            font-size: 0.9rem;
+                        }
+                    }
+                </style>
+            </t>
+
+            <div class="container-fluid p-0">
+                <div class="row g-0">
+                    <!-- Sidebar -->
+                    <div class="dashboard-sidebar">
+                        <div class="sidebar-header">
+                            <h4>Sales Management</h4>
+                        </div>
+                        <div class="list-group">
+                            <!-- Dashboard - Always visible -->
+                            <a href="/sales_management" class="list-group-item list-group-item-action">
+                                <i class="fa fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                            
+                            <!-- Sales Portal - Conditionally visible -->
+                            <t t-if="use_sales_portal">
+                                <a href="/sales_management/sales" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-briefcase me-2"></i> Sales
+                                </a>
+                            </t>
+                            
+                            <!-- Service Portal - Conditionally visible -->
+                            <t t-if="use_service_portal">
+                                <a href="/sales_management/service" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-concierge-bell me-2"></i> Service
+                                </a>
+                            </t>
+                            
+                            <!-- Contacts Portal - Conditionally visible -->
+                            <t t-if="use_contact_portal">
+                                <a href="/sales_management/contacts" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-users me-2"></i> Contacts
+                                </a>
+                            </t>
+                            
+                            <!-- Quotation Portal - Conditionally visible -->
+                            <t t-if="use_quotation_portal">
+                                <a href="/sales_management/quotation" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-file-invoice-dollar me-2"></i> Quotation
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="dashboard-content">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2 class="mb-1">Create <t t-esc="team.capitalize()"/> Task</h2>
+                                <p class="text-muted mb-0">Fill in the task details below</p>
+                            </div>
+                            <a t-att-href="'/sales_management/%s' % team" class="btn btn-secondary">
+                                <i class="fa fa-arrow-left me-2"></i>Back to List
+                            </a>
+                        </div>
+
+                        <div class="card form-container">
+                            <div class="card-header">
+                                <h4 class="mb-0">Task Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" action="/sales_management/submit_task" id="taskForm">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="team" t-att-value="team"/>
+                                    <input type="hidden" name="task_team" t-att-value="team"/>
+
+                                    <!-- Basic Information -->
+                                    <div class="mb-4">
+                                        <h5 class="section-header">Basic Information</h5>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <label class="form-label">Task Title *</label>
+                                                <input type="text" name="task_title" class="form-control" 
+                                                    placeholder="Enter task title" required="required"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Task Team</label>
+                                                <input type="text" class="form-control" 
+                                                    t-att-value="team.capitalize()" readonly="readonly"/>
+                                                <small class="text-muted">Auto-set based on menu</small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Employee</label>
+                                                <input type="text" class="form-control" 
+                                                    t-att-value="current_employee.name if current_employee else 'Not Set'" 
+                                                    readonly="readonly"/>
+                                                <input type="hidden" name="employee_id" t-att-value="current_employee.id if current_employee else ''"/>
+                                                <small class="text-muted">Auto-filled from logged-in user</small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Designation</label>
+                                                <input type="text" class="form-control" 
+                                                    t-att-value="current_employee.job_id.name if current_employee and current_employee.job_id else ''" 
+                                                    readonly="readonly"/>
+                                                <small class="text-muted">Auto-filled from employee</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Customer Information -->
+                                    <div class="mb-4">
+                                        <h5 class="section-header">Customer Information</h5>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Customer</label>
+                                                <select name="customer_id" class="form-control select2-customer" id="customer_select">
+                                                    <option value="">-- Search Customer --</option>
+                                                    <t t-foreach="customers" t-as="cust">
+                                                        <option t-att-value="cust.id" 
+                                                                t-att-data-function="cust.function if cust.function else ''"
+                                                                t-att-data-company="cust.parent_id.name if cust.parent_id else ''"
+                                                                t-esc="cust.name"/>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Company</label>
+                                                <input type="text" id="company_field" class="form-control" 
+                                                    placeholder="Auto-filled from customer" readonly="readonly"/>
+                                                <small class="text-muted">Auto-filled when customer selected</small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Customer Designation</label>
+                                                <input type="text" id="customer_designation_field" class="form-control" 
+                                                    placeholder="Auto-filled from customer" readonly="readonly"/>
+                                                <small class="text-muted">Auto-filled when customer selected</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Visit Information -->
+                                    <div class="mb-4">
+                                        <h5 class="section-header">Visit Information</h5>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Visit Date</label>
+                                                <input type="date" name="visit_date" class="form-control"/>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Time IN</label>
+                                                <input type="datetime-local" name="time_in_dt" class="form-control"/>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Time Out</label>
+                                                <input type="datetime-local" name="time_out_dt" class="form-control"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Purpose</label>
+                                                <select name="purpose_id" class="form-control">
+                                                    <option value="">-- Select Purpose --</option>
+                                                    <t t-foreach="purposes" t-as="purpose">
+                                                        <option t-att-value="purpose.id" t-esc="purpose.name"/>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Additional Details -->
+                                    <div class="mb-4">
+                                        <h5 class="section-header">Additional Details</h5>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Analyzer</label>
+                                                <input type="text" name="analyzer" class="form-control" 
+                                                    placeholder="Enter analyzer"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <label class="form-label">Reagents</label>
+                                                <textarea name="reagents" class="form-control" rows="3" 
+                                                        placeholder="Enter reagents used"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <label class="form-label">Remarks</label>
+                                                <textarea name="remarks" class="form-control" rows="3" 
+                                                        placeholder="Enter any additional remarks"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <label class="form-label">Tags</label>
+                                                <input type="text" name="tags" class="form-control" 
+                                                    placeholder="Enter tags (comma separated)"/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex gap-2 pt-3 border-top">
+                                        <button type="submit" class="btn btn-primary px-5">
+                                            <i class="fa fa-save me-2"></i>Submit Task
+                                        </button>
+                                        <a t-att-href="'/sales_management/%s' % team" class="btn btn-outline-secondary px-4">
+                                            <i class="fa fa-times me-2"></i>Cancel
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- jQuery (required for Select2) -->
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <!-- Bootstrap JS -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- Select2 JS -->
+            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+            
+            <script>
+            <![CDATA[
+                $(document).ready(function() {
+                    // Initialize Select2 for Customer (Live Search)
+                    $('.select2-customer').select2({
+                        placeholder: 'Search customer by name...',
+                        allowClear: true,
+                        width: '100%'
+                    });
+
+                    // Auto-fill Company and Customer Designation when Customer is selected
+                    $('#customer_select').on('change', function() {
+                        const selectedOption = $(this).find('option:selected');
+                        const customerFunction = selectedOption.data('function') || '';
+                        const customerCompany = selectedOption.data('company') || '';
+                        
+                        $('#customer_designation_field').val(customerFunction);
+                        $('#company_field').val(customerCompany);
+                    });
+
+                    // Form validation
+                    $('#taskForm').on('submit', function(e) {
+                        const taskTitle = $('input[name="task_title"]').val().trim();
+                        if (!taskTitle) {
+                            e.preventDefault();
+                            alert('Please enter a task title');
+                            $('input[name="task_title"]').focus();
+                            return false;
+                        }
+                    });
+                    
+                    // Remove active state from all sidebar menus on create_task pages
+                    const sidebarLinks = document.querySelectorAll('.dashboard-sidebar a');
+                    sidebarLinks.forEach(link => {
+                        link.classList.remove('active');
+                    });
+                });
+            ]]>
+            </script>
+        </t>
+    </template>
+
+    <!-- Task View Template -->
+    <template id="task_view_template" name="Task View">
+        <t t-call="website.layout">
+            <t t-set="head">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+                <style>
+                    /* Sidebar Styles - MATCHES DASHBOARD */
+                    .dashboard-sidebar {
+                        position: fixed;
+                        top: 70px;
+                        left: 0;
+                        height: calc(100vh - 70px);
+                        width: 280px;
+                        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                        border-right: none;
+                        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+                        z-index: 1000;
+                        padding-top: 20px;
+                        overflow-y: auto;
+                        transition: all 0.3s ease;
+                    }
+
+                    .dashboard-sidebar .sidebar-header {
+                        padding: 0 25px 20px;
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                        margin-bottom: 15px;
+                    }
+
+                    .dashboard-sidebar .sidebar-header h4 {
+                        color: white;
+                        font-weight: 600;
+                        margin: 0;
+                        font-size: 1.2rem;
+                    }
+
+                    .dashboard-sidebar .list-group-item {
+                        border: none;
+                        border-radius: 12px;
+                        padding: 16px 20px;
+                        margin: 4px 15px;
+                        font-weight: 500;
+                        color: rgba(255,255,255,0.9);
+                        background: transparent;
+                        transition: all 0.3s ease;
+                        border-left: 3px solid transparent;
+                        display: flex;
+                        align-items: center;
+                        text-decoration: none;
+                    }
+
+                    .dashboard-sidebar .list-group-item:hover {
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        transform: translateX(5px);
+                    }
+
+                    .dashboard-sidebar .list-group-item.active {
+                        background: rgba(255,255,255,0.15);
+                        color: white;
+                        border-left-color: #e74c3c;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    }
+
+                    .dashboard-sidebar .list-group-item i {
+                        width: 20px;
+                        text-align: center;
+                        margin-right: 12px;
+                        font-size: 1.1rem;
+                    }
+
+                    .dashboard-content {
+                        margin-left: 300px;
+                        padding: 30px;
+                        min-height: calc(100vh - 70px);
+                        background: #f8fafc;
+                        width: calc(100% - 300px);
+                        overflow-x: hidden;
+                    }
+
+                    .card {
+                        border: none;
+                        border-radius: 16px;
+                        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                        margin-bottom: 25px;
+                        overflow: hidden;
+                        width: 100%;
+                    }
+
+                    .card-header {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        padding: 20px 25px;
+                        border-radius: 16px 16px 0 0;
+                    }
+
+                    .card-header h4 {
+                        margin: 0;
+                        font-weight: 600;
+                    }
+
+                    @media (max-width: 1200px) {
+                        .dashboard-sidebar {
+                            width: 250px;
+                        }
+                        .dashboard-content {
+                            margin-left: 270px;
+                            width: calc(100% - 270px);
+                        }
+                    }
+
+                    @media (max-width: 992px) {
+                        .dashboard-sidebar {
+                            width: 100%;
+                            height: auto;
+                            position: relative;
+                            top: 0;
+                        }
+                        
+                        .dashboard-content {
+                            margin-left: 0;
+                            padding: 20px 15px;
+                            width: 100%;
+                        }
+                    }
+                </style>
+            </t>
+
+            <div class="container-fluid p-0">
+                <div class="row g-0">
+                    <!-- Sidebar -->
+                    <div class="dashboard-sidebar">
+                        <div class="sidebar-header">
+                            <h4>Sales Management</h4>
+                        </div>
+                        <div class="list-group">
+                            <!-- Dashboard - Always visible -->
+                            <a href="/sales_management" class="list-group-item list-group-item-action">
+                                <i class="fa fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                            
+                            <!-- Sales Portal - Conditionally visible -->
+                            <t t-if="use_sales_portal">
+                                <a href="/sales_management/sales" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-briefcase me-2"></i> Sales
+                                </a>
+                            </t>
+                            
+                            <!-- Service Portal - Conditionally visible -->
+                            <t t-if="use_service_portal">
+                                <a href="/sales_management/service" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-concierge-bell me-2"></i> Service
+                                </a>
+                            </t>
+                            
+                            <!-- Contacts Portal - Conditionally visible -->
+                            <t t-if="use_contact_portal">
+                                <a href="/sales_management/contacts" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-users me-2"></i> Contacts
+                                </a>
+                            </t>
+                            
+                            <!-- Quotation Portal - Conditionally visible -->
+                            <t t-if="use_quotation_portal">
+                                <a href="/sales_management/quotation" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-file-invoice-dollar me-2"></i> Quotation
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="dashboard-content">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2 class="mb-1">Task Details</h2>
+                                <p class="text-muted mb-0">View task information</p>
+                            </div>
+                            <a href="/sales_management" class="btn btn-secondary">
+                                <i class="fa fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h4><t t-esc="task.task_title"/></h4>
+
+                                <p><strong>Team: </strong>
+                                    <t t-esc="task.task_team == 'sales' and 'Sales' or 'Service'"/>
+                                </p>
+
+                                <p><strong>Remarks: </strong><t t-esc="task.remarks or ''"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

@@ -3,8 +3,9 @@
 
     <template id="dashboard_main" name="Dashboard">
         <t t-call="website.layout">
+            <t t-set="user_has_sales_portal" t-value="request.env.user.use_sales_portal"/>
+            <t t-set="user_has_service_portal" t-value="request.env.user.use_service_portal"/>
             <t t-set="user_has_contact_portal" t-value="request.env.user.use_contact_portal"/>
-            <t t-set="user_has_todo_portal" t-value="request.env.user.use_todo_portal"/>
             <t t-set="user_has_quotation_portal" t-value="request.env.user.use_quotation_portal"/>
             
             <style>
@@ -185,10 +186,16 @@
                                 <i class="fa fa-tachometer-alt me-2"></i> Dashboard
                             </a>
                             
-                            <!-- Todo Portal - Conditionally visible -->
-                            <t t-if="user_has_todo_portal">
-                                <a href="/sales_management/todo" class="list-group-item list-group-item-action">
-                                    <i class="fa fa-check-circle me-2"></i> Todo
+                            <!-- Sales Portal - Conditionally visible -->
+                            <t t-if="request.env.user.use_sales_portal">
+                                <a href="/sales_management/sales" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-briefcase me-2"></i> Sales
+                                </a>
+                            </t>
+                            <!-- Service Portal - Conditionally visible -->
+                             <t t-if="request.env.user.use_service_portal">
+                                <a href="/sales_management/service" class="list-group-item list-group-item-action">
+                                    <i class="fa fa-concierge-bell me-2"></i> Service
                                 </a>
                             </t>
                             
@@ -289,17 +296,6 @@
                                                         <i class="fa fa-file-alt fa-2x mb-2"></i>
                                                         <br/>
                                                         New Quotation
-                                                    </a>
-                                                </div>
-                                            </t>
-                                            
-                                            <!-- Todo Action - Only show if user has todo portal access -->
-                                            <t t-if="user_has_todo_portal">
-                                                <div class="col-md-6 mb-3">
-                                                    <a href="/sales_management/todo" class="btn btn-outline-info w-100 py-3">
-                                                        <i class="fa fa-tasks fa-2x mb-2"></i>
-                                                        <br/>
-                                                        Add Task
                                                     </a>
                                                 </div>
                                             </t>

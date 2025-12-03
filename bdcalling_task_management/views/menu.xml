@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Main App Menu -->
+    <menuitem id="menu_task_management_root"
+        name="Task Management"
+        sequence="10"
+        web_icon="bdcalling_task_management,static/description/icon.png"/>
+
+    <!-- Submenu - Tasks -->
+    <menuitem id="menu_task_management_menu"
+        name="Tasks"
+        parent="menu_task_management_root"
+        action="action_task_management"
+        sequence="10"/>
+
+    <!-- Submenu - Purpose (NEW) -->
+    <menuitem id="menu_task_purpose"
+        name="Purpose"
+        parent="menu_task_management_root"
+        action="action_task_purpose"
+        sequence="20"/>
+
+</odoo>
