@@ -7,6 +7,7 @@
             <t t-set="user_has_service_portal" t-value="request.env.user.use_service_portal"/>
             <t t-set="user_has_contact_portal" t-value="request.env.user.use_contact_portal"/>
             <t t-set="user_has_quotation_portal" t-value="request.env.user.use_quotation_portal"/>
+            <t t-set="no_footer" t-value="no_footer or False"/>
             
             <style>
                 /* Your existing CSS remains the same */

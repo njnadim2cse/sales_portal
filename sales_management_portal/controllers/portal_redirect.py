@@ -6,13 +6,24 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class MasterPortalRedirect(CustomerPortal):
-    """
-    Master controller that overrides portal routes and adds custom redirects
-    """
-    @http.route(['/my', '/my/home'], type='http', auth="user", website=True)
+ 
+    # def _prepare_portal_layout_values(self):
+    #     """Override to add no_footer flag"""
+    #     values = super(MasterPortalRedirect, self)._prepare_portal_layout_values()
+    #     # Add flag to template to hide footer
+    #     values['no_footer'] = True
+    #     return values
+
+    @http.route(['/','/my', '/my/home'], type='http', auth="user", website=True)
     def home(self, **kw):
         """Override portal home - redirect to sales management dashboard"""
         _logger.info(f"MASTER REDIRECT: Portal home override for user {request.env.user.id}")
+        
+        # Get layout values with no_footer flag
+        # values = self._prepare_portal_layout_values()
+        
+        # If you want to render a template instead of redirecting:
+        # return request.render("sales_management_portal.dashboard_main", values)
         
         # Redirect to sales management dashboard
         return request.redirect('/sales_management')

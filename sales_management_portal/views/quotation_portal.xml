@@ -143,36 +143,49 @@
                         transform: translateY(-2px);
                     }
 
+                    /* Compact Capsule Status Badges */
                     .quote-status {
-                        padding: 6px 12px;
+                        display: inline-block;
+                        padding: 4px 12px;
                         border-radius: 20px;
-                        font-size: 0.75rem;
-                        font-weight: 600;
+                        font-size: 0.7rem;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.3px;
+                        min-width: 90px;
+                        text-align: center;
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
                     }
 
                     .status-draft {
-                        background: #fff3cd;
-                        color: #856404;
+                        background: #ffd166;
+                        color: #7d5a29;
                     }
 
                     .status-sent {
-                        background: #e3f2fd;
-                        color: #1976d2;
+                        background: #6a89cc;
+                        color: white;
+                    }
+
+                    .status-sale {
+                        background: #27ae60;
+                        color: white;
                     }
 
                     .status-confirmed {
-                        background: #e8f5e8;
-                        color: #2e7d32;
+                        background: #27ae60;
+                        color: white;
                     }
 
                     .status-done {
-                        background: #e8f5e8;
-                        color: #2e7d32;
+                        background: #27ae60;
+                        color: white;
                     }
 
                     .status-cancel {
-                        background: #f5e6e8;
-                        color: #c2185b;
+                        background: #e74c3c;
+                        color: white;
                     }
 
                     /* Enhanced Buttons */
@@ -236,13 +249,43 @@
 
                     /* Success Message */
                     .success-message {
+                        position: fixed;
+                        top: 80px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        z-index: 9999;
+                        min-width: 400px;
+                        max-width: 600px;
                         background: linear-gradient(135deg, #27ae60, #2ecc71);
                         color: white;
-                        padding: 15px 20px;
-                        border-radius: 10px;
-                        margin-bottom: 20px;
-                        text-align: center;
-                        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+                        padding: 20px 30px;
+                        border-radius: 12px;
+                        box-shadow: 0 10px 40px rgba(39, 174, 96, 0.4);
+                        animation: slideDown 0.5s ease-out;
+                    }
+
+                    .success-message i {
+                        font-size: 1.5rem;
+                        margin-right: 15px;
+                    }
+
+                    @keyframes slideDown {
+                        from {
+                            opacity: 0;
+                            transform: translateX(-50%) translateY(-30px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translateX(-50%) translateY(0);
+                        }
+                    }
+
+                    @media (max-width: 768px) {
+                        .success-message {
+                            min-width: 90%;
+                            left: 5%;
+                            transform: none;
+                        }
                     }
 
                     /* Search Dropdown Styles */
@@ -358,10 +401,10 @@
                     <!-- Main Content -->
                     <div class="dashboard-content col">
                         <!-- Success Message -->
-                        <t t-if="request.params.get('success')">
-                            <div class="success-message">
-                                <i class="fa fa-check-circle me-2"></i>
-                                <strong>Quotation created successfully!</strong>
+                        <t t-if="message">
+                            <div class="success-message" id="successMessage">
+                                <i class="fa fa-check-circle"></i>
+                                <strong t-esc="message"/>
                             </div>
                         </t>
 
@@ -426,13 +469,17 @@
                                                         <strong t-esc="quote.name"/>
                                                     </td>
                                                     <td t-esc="quote.date_order"/>
-                                                    <td t-esc="quote.partner_id.name"/>
+                                                    <td t-esc="quote.partner_id.complete_name"/>
                                                     <td>
                                                         <strong t-esc="'${:,.2f}'.format(quote.amount_total)"/>
                                                     </td>
                                                     <td>
                                                         <span class="quote-status" t-att-class="'status-' + quote.state">
-                                                            <t t-esc="quote.state.title()"/>
+                                                            <t t-if="quote.state == 'draft'">Quotation</t>
+                                                            <t t-elif="quote.state == 'sent'">Quotation Sent</t>
+                                                            <t t-elif="quote.state == 'sale'">Sales Order</t>
+                                                            <t t-elif="quote.state == 'cancel'">Cancelled</t>
+                                                            <t t-else=""><t t-esc="quote.state.title()"/></t>
                                                         </span>
                                                     </td>
                                                     <td>
@@ -441,11 +488,10 @@
                                                                     t-att-data-quote-id="quote.id" title="View">
                                                                 <i class="fa fa-eye"></i>
                                                             </button>
-                                                            <a t-att-href="'/report/pdf/sale.report_saleorder/' + str(quote.id)" 
+                                                            <a t-att-href="'/sales_management/quotation/download_pdf/' + str(quote.id)" 
                                                                 class="btn btn-sm btn-outline-secondary" 
-                                                                title="Print PDF" 
-                                                                target="_blank">
-                                                                    <i class="fa fa-print"></i>
+                                                                title="Download PDF">
+                                                                <i class="fa fa-download"></i>
                                                             </a>
                                                         </div>
                                                     </td>
@@ -488,7 +534,21 @@
 
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script>
+            <![CDATA[
                 document.addEventListener("DOMContentLoaded", function () {
+                    
+                    // Auto-hide success message after 5 seconds
+                    const successMessage = document.getElementById('successMessage');
+                    if (successMessage) {
+                        setTimeout(function() {
+                            successMessage.style.opacity = '0';
+                            successMessage.style.transition = 'opacity 0.5s ease-out';
+                            setTimeout(function() {
+                                successMessage.remove();
+                            }, 500);
+                        }, 5000);
+                    }
+
                     const menuItems = document.querySelectorAll("#sidebarMenu a");
                     const currentPath = window.location.pathname;
 
@@ -507,6 +567,7 @@
                         });
                     });
                 });
+
 
                 function viewQuotation(quoteId) {
                     // Show loading state
@@ -535,6 +596,7 @@
                                 '&lt;div class="alert alert-danger"&gt;Error loading quotation details. Please try again.&lt;/div&gt;';
                         });
                 }
+            ]]>
             </script>
         </t>
     </template>
@@ -1419,7 +1481,6 @@
                         name: 'product_id[]',
                         searchUrl: '/sales_management/search/products',
                         displayField: 'name',
-                        secondaryField: 'default_code',
                         onSelect: async function(product) {
                             const row = document.getElementById(productSearchContainerId).closest('.row');
                             const priceInput = row.querySelector('.price-input');
@@ -1535,7 +1596,7 @@
                 // Initialize on DOM ready
                 document.addEventListener("DOMContentLoaded", function () {
                     console.log('Quotation form loaded - initializing search dropdowns');
-                    
+                
                     // Initialize Customer Search Dropdown
                     const customerContainer = document.getElementById('customer-search-container');
                     if (customerContainer) {
@@ -1702,7 +1763,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Customer</label>
-                            <p class="form-control-plaintext" t-esc="quotation.partner_id.name"/>
+                            <p class="form-control-plaintext" t-esc="quotation.partner_id.complete_name"/>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Date</label>
@@ -1712,7 +1773,11 @@
                             <label class="form-label fw-bold">Status</label>
                             <p class="form-control-plaintext">
                                 <span class="quote-status" t-att-class="'status-' + quotation.state">
-                                    <t t-esc="quotation.state.title()"/>
+                                    <t t-if="quotation.state == 'draft'">Quotation</t>
+                                    <t t-elif="quotation.state == 'sent'">Quotation Sent</t>
+                                    <t t-elif="quotation.state == 'sale'">Sales Order</t>
+                                    <t t-elif="quotation.state == 'cancel'">Cancelled</t>
+                                    <t t-else=""><t t-esc="quotation.state.title()"/></t>
                                 </span>
                             </p>
                         </div>
