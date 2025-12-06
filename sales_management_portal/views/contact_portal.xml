@@ -595,223 +595,32 @@
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script>
             <![CDATA[
-                // SIMPLE Search Dropdown Component
-                class SimpleSearchDropdown {
-                    constructor(config) {
-                        this.config = config;
-                        this.selectedItem = null;
-                        this.input = null;
-                        this.hiddenInput = null;
-                        this.suggestions = null;
-                        this.list = null;
-                        this.init();
-                    }
-
-                    init() {
-                        this.createHTML();
-                        this.bindEvents();
-                    }
-
-                    createHTML() {
-                        const container = this.config.container;
-                        const placeholder = this.config.placeholder;
-                        const name = this.config.name;
+                // Auto-hide success message function
+                function autoHideSuccessMessage() {
+                    const successMessage = document.getElementById('successMessage');
+                    if (successMessage) {
+                        // Make sure it's visible
+                        successMessage.style.display = 'block';
+                        successMessage.style.opacity = '1';
                         
-                        const html = '&lt;div class="search-dropdown-container position-relative"&gt;' +
-                                    '&lt;div class="input-group"&gt;' +
-                                        '&lt;input type="text" ' +
-                                            'class="form-control search-dropdown-input" ' +
-                                            'placeholder="' + placeholder + '" ' +
-                                            'autocomplete="off"&gt;' +
-                                        '&lt;input type="hidden" name="' + name + '" class="selected-value"&gt;' +
-                                        '&lt;button class="btn btn-outline-secondary clear-search-btn" type="button" style="display: none;"&gt;' +
-                                            '&lt;i class="fa fa-times"&gt;&lt;/i&gt;' +
-                                        '&lt;/button&gt;' +
-                                    '&lt;/div&gt;' +
-                                    '&lt;div class="search-suggestions dropdown-menu w-100" style="display: none;"&gt;' +
-                                        '&lt;div class="list-group"&gt;&lt;/div&gt;' +
-                                    '&lt;/div&gt;' +
-                                '&lt;/div&gt;';
-                        
-                        container.innerHTML = html;
-                        
-                        this.input = container.querySelector('.search-dropdown-input');
-                        this.hiddenInput = container.querySelector('.selected-value');
-                        this.suggestions = container.querySelector('.search-suggestions');
-                        this.list = container.querySelector('.list-group');
-                        this.clearBtn = container.querySelector('.clear-search-btn');
-                    }
-
-                    bindEvents() {
-                        const self = this;
-                        
-                        // Input events
-                        this.input.addEventListener('input', function(ev) { 
-                            self.onSearchChange(ev); 
-                        });
-                        
-                        this.input.addEventListener('focus', function() { 
-                            if (!self.input.value) {
-                                self.searchItems('');
-                            }
-                        });
-                        
-                        this.input.addEventListener('blur', function() { 
+                        setTimeout(function() {
+                            successMessage.style.opacity = '0';
+                            successMessage.style.transition = 'opacity 0.5s ease-out';
+                            
                             setTimeout(function() {
-                                self.hideSuggestions();
-                            }, 200);
-                        });
-                        
-                        this.clearBtn.addEventListener('click', function() { 
-                            self.clearSearch(); 
-                        });
-                        
-                        // Prevent form submission on enter
-                        this.input.addEventListener('keydown', function(ev) {
-                            if (ev.key === 'Enter') {
-                                ev.preventDefault();
-                            }
-                        });
-                    }
-
-                    async searchItems(searchTerm) {
-                        try {
-                            console.log('Searching for:', searchTerm);
-                            
-                            const response = await fetch(this.config.searchUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': this.getCSRFToken()
-                                },
-                                body: JSON.stringify({
-                                    search_term: searchTerm
-                                })
-                            });
-                            
-                            const data = await response.json();
-                            console.log('Search response:', data);
-                            
-                            this.renderSuggestions(data.items || []);
-                            this.showSuggestions();
-                            
-                        } catch (error) {
-                            console.error('Error searching items:', error);
-                            this.renderSuggestions([]);
-                            this.showSuggestions();
-                        }
-                    }
-
-                    onSearchChange(ev) {
-                        const searchTerm = ev.target.value;
-                        
-                        // Show/hide clear button
-                        this.clearBtn.style.display = searchTerm ? 'block' : 'none';
-                        
-                        this.searchItems(searchTerm);
-                    }
-
-                    renderSuggestions(items) {
-                        const displayField = this.config.displayField || 'name';
-                        const secondaryField = this.config.secondaryField;
-                        this.list.innerHTML = '';
-
-                        if (items.length === 0) {
-                            this.list.innerHTML = '&lt;div class="list-group-item text-muted text-center"&gt;No results found&lt;/div&gt;';
-                            return;
-                        }
-
-                        const self = this;
-                        items.forEach(function(item) {
-                            const itemElement = document.createElement('button');
-                            itemElement.type = 'button';
-                            itemElement.className = 'list-group-item list-group-item-action';
-                            
-                            let secondaryHtml = '';
-                            if (secondaryField &amp;&amp; item[secondaryField]) {
-                                secondaryHtml = '&lt;div class="text-muted small"&gt;' + item[secondaryField] + '&lt;/div&gt;';
-                            }
-                            
-                            itemElement.innerHTML = '&lt;div class="d-flex justify-content-between align-items-center"&gt;' +
-                                        '&lt;div&gt;' +
-                                            '&lt;div class="fw-bold"&gt;' + item[displayField] + '&lt;/div&gt;' +
-                                            secondaryHtml +
-                                        '&lt;/div&gt;' +
-                                        '&lt;div class="text-muted small"&gt;' + (item.type || '') + '&lt;/div&gt;' +
-                                    '&lt;/div&gt;';
-                            
-                            itemElement.addEventListener('click', function() { 
-                                self.onItemSelect(item); 
-                            });
-                            
-                            self.list.appendChild(itemElement);
-                        });
-                    }
-
-                    onItemSelect(item) {
-                        this.selectedItem = item;
-                        const displayField = this.config.displayField || 'name';
-                        this.input.value = item[displayField];
-                        this.hiddenInput.value = item.id;
-                        this.hideSuggestions();
-
-                        console.log('Selected item:', item);
-
-                        // Call custom callback if provided
-                        if (this.config.onSelect) {
-                            this.config.onSelect(item);
-                        }
-                    }
-
-                    clearSearch() {
-                        this.selectedItem = null;
-                        this.input.value = "";
-                        this.hiddenInput.value = "";
-                        this.clearBtn.style.display = 'none';
-                        this.hideSuggestions();
-
-                        // Call custom callback if provided
-                        if (this.config.onClear) {
-                            this.config.onClear();
-                        }
-                    }
-
-                    showSuggestions() {
-                        this.suggestions.style.display = 'block';
-                    }
-
-                    hideSuggestions() {
-                        this.suggestions.style.display = 'none';
-                    }
-
-                    getCSRFToken() {
-                        const csrfToken = document.querySelector('input[name="csrf_token"]');
-                        return csrfToken ? csrfToken.value : '';
-                    }
-
-                    // Public methods
-                    getValue() {
-                        return this.selectedItem;
-                    }
-
-                    clear() {
-                        this.clearSearch();
+                                if (successMessage && successMessage.parentNode) {
+                                    successMessage.remove();
+                                }
+                            }, 500);
+                        }, 5000);
                     }
                 }
 
                 document.addEventListener("DOMContentLoaded", function () {
-                    // Auto-hide success message after 5 seconds
-                    const successMessage = document.getElementById('successMessage');
-                    if (successMessage) {
-                        setTimeout(function() {
-                            successMessage.style.opacity = '0';
-                            successMessage.style.transition = 'opacity 0.5s ease-out';
-                            setTimeout(function() {
-                                successMessage.remove();
-                            }, 500);
-                        }, 5000);
-                    }
+                    // Initialize auto-hide for success message
+                    autoHideSuccessMessage();
 
+                    // Initialize sidebar menu
                     const menuItems = document.querySelectorAll("#sidebarMenu a");
                     const currentPath = window.location.pathname;
 
@@ -822,112 +631,163 @@
                         }
                     });
 
-                    // Add event listeners for view buttons
+                    // Add event listeners for view buttons - FIXED
                     document.querySelectorAll('.view-contact-btn').forEach(function(button) {
-                        button.addEventListener('click', function() {
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
                             const contactId = this.getAttribute('data-contact-id');
-                            viewContact(contactId);
+                            if (contactId) {
+                                viewContact(contactId);
+                            }
                         });
                     });
 
                 });
 
-                
-                function viewContact(contactId) {
+                // Make functions globally accessible
+                window.viewContact = function(contactId) {
                     // Show loading state
-                    document.getElementById('contactViewContent').innerHTML = '&lt;div class="text-center p-4"&gt;&lt;div class="spinner-border" role="status"&gt;&lt;/div&gt;&lt;p class="mt-2"&gt;Loading contact details...&lt;/p&gt;&lt;/div&gt;';
+                    const modalContent = document.getElementById('contactViewContent');
+                    if (!modalContent) {
+                        console.error('Modal content not found');
+                        return;
+                    }
                     
-                    // Check if bootstrap is available
-                    if (typeof bootstrap !== 'undefined') {
-                        const modalElement = document.getElementById('contactViewModal');
-                        const modal = new bootstrap.Modal(modalElement);
-                        modal.show();
+                    modalContent.innerHTML = '<div class="text-center p-4"><div class="spinner-border" role="status"></div><p class="mt-2">Loading contact details...</p></div>';
+                    
+                    // Show modal FIRST
+                    const modalElement = document.getElementById('contactViewModal');
+                    if (!modalElement) {
+                        console.error('Modal element not found');
+                        return;
+                    }
+                    
+                    // Use Bootstrap modal if available
+                    let modalInstance = null;
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        modalInstance = new bootstrap.Modal(modalElement);
+                        modalInstance.show();
                     } else {
-                        // Fallback: show the modal directly
-                        document.getElementById('contactViewModal').style.display = 'block';
+                        // Fallback
+                        modalElement.style.display = 'block';
+                        modalElement.classList.add('show');
                     }
                     
                     // Then load content
                     fetch('/sales_management/contacts/view/' + contactId)
                         .then(function(response) {
                             if (!response.ok) {
-                                throw new Error('Network response was not ok');
+                                throw new Error('Network response was not ok: ' + response.status);
                             }
                             return response.text();
                         })
                         .then(function(html) {
-                            document.getElementById('contactViewContent').innerHTML = html;
+                            modalContent.innerHTML = html;
                             
-                            // Re-initialize event listeners for contact person cards after content is loaded
+                            // Re-initialize event listeners for contact person cards
                             setTimeout(function() {
                                 document.querySelectorAll('.contact-person-card').forEach(function(card) {
                                     card.addEventListener('click', function() {
                                         const personId = this.getAttribute('data-contact-id');
-                                        viewContactPerson(personId);
+                                        if (personId) {
+                                            viewContactPerson(personId);
+                                        }
                                     });
                                 });
                             }, 100);
                         })
                         .catch(function(error) {
                             console.error('Error loading contact:', error);
-                            document.getElementById('contactViewContent').innerHTML = 
-                                '&lt;div class="alert alert-danger"&gt;Error loading contact details. Please try again.&lt;/div&gt;';
+                            modalContent.innerHTML = '<div class="alert alert-danger">Error loading contact details. Please try again.</div>';
                         });
-                }
+                };
 
-                function viewContactPerson(contactId) {
+                window.viewContactPerson = function(contactId) {
                     // Show loading state
-                    document.getElementById('contactPersonViewContent').innerHTML = '&lt;div class="text-center p-4"&gt;&lt;div class="spinner-border" role="status"&gt;&lt;/div&gt;&lt;p class="mt-2"&gt;Loading contact person details...&lt;/p&gt;&lt;/div&gt;';
+                    const modalContent = document.getElementById('contactPersonViewContent');
+                    if (!modalContent) {
+                        console.error('Person modal content not found');
+                        return;
+                    }
+                    
+                    modalContent.innerHTML = '<div class="text-center p-4"><div class="spinner-border" role="status"></div><p class="mt-2">Loading contact person details...</p></div>';
                     
                     fetch('/sales_management/contacts/view-person/' + contactId)
                         .then(function(response) {
                             if (!response.ok) {
-                                throw new Error('Network response was not ok');
+                                throw new Error('Network response was not ok: ' + response.status);
                             }
                             return response.text();
                         })
                         .then(function(html) {
-                            document.getElementById('contactPersonViewContent').innerHTML = html;
+                            modalContent.innerHTML = html;
                             
-                            // Close the contact modal and open person modal
-                            if (typeof bootstrap !== 'undefined') {
-                                const contactModal = bootstrap.Modal.getInstance(document.getElementById('contactViewModal'));
+                            // Get the contact modal instance and hide it
+                            const contactModalElement = document.getElementById('contactViewModal');
+                            if (contactModalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                                const contactModal = bootstrap.Modal.getInstance(contactModalElement);
                                 if (contactModal) {
                                     contactModal.hide();
                                 }
-                                
-                                const personModal = new bootstrap.Modal(document.getElementById('contactPersonViewModal'));
+                            } else if (contactModalElement) {
+                                // Fallback
+                                contactModalElement.style.display = 'none';
+                                contactModalElement.classList.remove('show');
+                            }
+                            
+                            // Show the person modal
+                            const personModalElement = document.getElementById('contactPersonViewModal');
+                            if (!personModalElement) {
+                                console.error('Person modal element not found');
+                                return;
+                            }
+                            
+                            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                                const personModal = new bootstrap.Modal(personModalElement);
                                 personModal.show();
                             } else {
                                 // Fallback
-                                document.getElementById('contactViewModal').style.display = 'none';
-                                document.getElementById('contactPersonViewModal').style.display = 'block';
+                                personModalElement.style.display = 'block';
+                                personModalElement.classList.add('show');
                             }
                         })
                         .catch(function(error) {
                             console.error('Error loading contact person:', error);
-                            document.getElementById('contactPersonViewContent').innerHTML = 
-                                '&lt;div class="alert alert-danger"&gt;Error loading contact person details. Please try again.&lt;/div&gt;';
+                            modalContent.innerHTML = '<div class="alert alert-danger">Error loading contact person details. Please try again.</div>';
                         });
-                }
+                };
 
-                function closeContactModal() {
-                    if (typeof bootstrap !== 'undefined') {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('contactViewModal'));
-                        if (modal) modal.hide();
+                // Close functions
+                window.closeContactModal = function() {
+                    const modalElement = document.getElementById('contactViewModal');
+                    if (!modalElement) return;
+                    
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
                     } else {
-                        document.getElementById('contactViewModal').style.display = 'none';
+                        modalElement.style.display = 'none';
+                        modalElement.classList.remove('show');
                     }
-                }
+                };
 
-                function closeContactPersonModal() {
-                    if (typeof bootstrap !== 'undefined') {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('contactPersonViewModal'));
-                        if (modal) modal.hide();
+                window.closeContactPersonModal = function() {
+                    const modalElement = document.getElementById('contactPersonViewModal');
+                    if (!modalElement) return;
+                    
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
                     } else {
-                        document.getElementById('contactPersonViewModal').style.display = 'none';
+                        modalElement.style.display = 'none';
+                        modalElement.classList.remove('show');
                     }
-                }
+                };
             ]]>
             </script>
         </t>

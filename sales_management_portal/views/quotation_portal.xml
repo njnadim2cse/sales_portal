@@ -535,67 +535,115 @@
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script>
             <![CDATA[
-                document.addEventListener("DOMContentLoaded", function () {
-                    
-                    // Auto-hide success message after 5 seconds
+                // Auto-hide success message function
+                function autoHideSuccessMessage() {
                     const successMessage = document.getElementById('successMessage');
                     if (successMessage) {
+                        // Make sure it's visible
+                        successMessage.style.display = 'block';
+                        successMessage.style.opacity = '1';
+                        
                         setTimeout(function() {
                             successMessage.style.opacity = '0';
                             successMessage.style.transition = 'opacity 0.5s ease-out';
+                            
                             setTimeout(function() {
-                                successMessage.remove();
+                                if (successMessage && successMessage.parentNode) {
+                                    successMessage.remove();
+                                }
                             }, 500);
                         }, 5000);
                     }
+                }
 
+                document.addEventListener("DOMContentLoaded", function () {
+                    // Initialize auto-hide for success message
+                    autoHideSuccessMessage();
+
+                    // Initialize sidebar menu
                     const menuItems = document.querySelectorAll("#sidebarMenu a");
                     const currentPath = window.location.pathname;
 
-                    menuItems.forEach(item =&gt; {
+                    menuItems.forEach(item => {
                         item.classList.remove("active");
                         if (item.getAttribute("href") === currentPath) {
                             item.classList.add("active");
                         }
                     });
 
-                    // Add event listeners for view buttons
-                    document.querySelectorAll('.view-quote-btn').forEach(button =&gt; {
-                        button.addEventListener('click', function() {
+                    // Add event listeners for view buttons - FIXED
+                    document.querySelectorAll('.view-quote-btn').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
                             const quoteId = this.getAttribute('data-quote-id');
-                            viewQuotation(quoteId);
+                            if (quoteId) {
+                                viewQuotation(quoteId);
+                            }
                         });
                     });
                 });
 
-
-                function viewQuotation(quoteId) {
+                // Make function globally accessible
+                window.viewQuotation = function(quoteId) {
                     // Show loading state
-                    document.getElementById('quotationViewContent').innerHTML = '&lt;div class="text-center p-4"&gt;&lt;div class="spinner-border" role="status"&gt;&lt;/div&gt;&lt;p class="mt-2"&gt;Loading quotation details...&lt;/p&gt;&lt;/div&gt;';
+                    const modalContent = document.getElementById('quotationViewContent');
+                    if (!modalContent) {
+                        console.error('Quotation modal content not found');
+                        return;
+                    }
                     
-                    if (typeof bootstrap !== 'undefined') {
-                        const modalElement = document.getElementById('quotationViewModal');
+                    modalContent.innerHTML = '<div class="text-center p-4"><div class="spinner-border" role="status"></div><p class="mt-2">Loading quotation details...</p></div>';
+                    
+                    // Show modal FIRST
+                    const modalElement = document.getElementById('quotationViewModal');
+                    if (!modalElement) {
+                        console.error('Quotation modal element not found');
+                        return;
+                    }
+                    
+                    // Use Bootstrap modal if available
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
                         const modal = new bootstrap.Modal(modalElement);
                         modal.show();
+                    } else {
+                        // Fallback
+                        modalElement.style.display = 'block';
+                        modalElement.classList.add('show');
                     }
                     
                     // Then load content
                     fetch('/sales_management/quotation/view/' + quoteId)
-                        .then(response =&gt; {
+                        .then(response => {
                             if (!response.ok) {
-                                throw new Error('Network response was not ok');
+                                throw new Error('Network response was not ok: ' + response.status);
                             }
                             return response.text();
                         })
-                        .then(html =&gt; {
-                            document.getElementById('quotationViewContent').innerHTML = html;
+                        .then(html => {
+                            modalContent.innerHTML = html;
                         })
-                        .catch(error =&gt; {
+                        .catch(error => {
                             console.error('Error loading quotation:', error);
-                            document.getElementById('quotationViewContent').innerHTML = 
-                                '&lt;div class="alert alert-danger"&gt;Error loading quotation details. Please try again.&lt;/div&gt;';
+                            modalContent.innerHTML = '<div class="alert alert-danger">Error loading quotation details. Please try again.</div>';
                         });
-                }
+                };
+
+                // Close function for quotation modal
+                window.closeQuotationModal = function() {
+                    const modalElement = document.getElementById('quotationViewModal');
+                    if (!modalElement) return;
+                    
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    } else {
+                        modalElement.style.display = 'none';
+                        modalElement.classList.remove('show');
+                    }
+                };
             ]]>
             </script>
         </t>

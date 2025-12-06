@@ -1,39 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="action_report_custom_quotation" model="ir.actions.report">
-        <field name="name">Without Test Pdf</field>
-        <field name="model">sale.order</field>
-        <field name="report_type">qweb-pdf</field>
-        <field name="report_name">bd_calling_billing_management.report_custom_quotation</field>
-        <field name="print_report_name">'Quotation_' + (object.name or 'Draft')</field>
-        <field name="binding_model_id" ref="model_sale_order"/>
-        <field name="binding_type">report</field>
-    </record>
-    <record id="action_report_custom_quotation" model="ir.actions.report">
-        <field name="name">Without Test Pdf</field>
+    <!-- PDF Reports - will download as PDF -->
+    <record id="action_report_custom_quotation_pdf" model="ir.actions.report">
+        <field name="name">Without Test PDF</field>
         <field name="model">account.move</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">bd_calling_billing_management.report_custom_quotation</field>
-        <field name="print_report_name">'Invoice_' + (object.name or 'Draft')</field>
+        <field name="report_name">bd_calling_billing_management.without_test_pdf</field>
+        <field name="print_report_name">'Invoice_' + (object.name or 'Draft') + '.pdf'</field>
         <field name="binding_model_id" ref="model_account_move"/>
         <field name="binding_type">report</field>
-</record>
-<record id="action_report_custom_quotation" model="ir.actions.report">
-    <field name="name">Without Test Pdf</field>
-    <field name="model">account.move</field>
-    <field name="report_type">qweb-pdf</field>
-    <field name="report_name">bd_calling_billing_management.report_custom_quotation</field>
-    <field name="print_report_name">'Invoice_' + (object.name or 'Draft')</field>
-    <field name="binding_model_id" ref="model_account_move"/>
-    <field name="binding_type">report</field>
-</record>
-<record id="action_report_with_test" model="ir.actions.report">
-    <field name="name">With Test Pdf</field>
-    <field name="model">account.move</field>
-    <field name="report_type">qweb-pdf</field>
-    <field name="report_name">bd_calling_billing_management.report_with_test</field>
-    <field name="print_report_name">'Standard_Invoice_' + (object.name or 'Draft')</field>
-    <field name="binding_model_id" ref="model_account_move"/>
-    <field name="binding_type">report</field>
-</record>
+         <field name="is_docx_report" eval="False"/> 
+    </record>
+    
+    <record id="action_report_with_test_pdf" model="ir.actions.report">
+        <field name="name">With Test PDF</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bd_calling_billing_management.with_tes_pdf</field>
+        <field name="print_report_name">'Standard_Invoice_' + (object.name or 'Draft') + '.pdf'</field>
+        <field name="binding_model_id" ref="model_account_move"/>
+        <field name="binding_type">report</field>
+         <field name="is_docx_report" eval="False"/>  
+    </record>
+    
+    <!-- DOCX Reports - generate PDF first, then controller converts to DOCX -->
+    <record id="action_report_custom_quotation_docx" model="ir.actions.report">
+        <field name="name">Without Test DOCX</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-html</field> <!-- must generate PDF -->
+        <field name="report_name">bd_calling_billing_management.report_custom_quotation</field> <!-- PDF report -->
+        <field name="print_report_name">'Invoice_' + (object.name or 'Draft') + '.docx'</field>
+        <field name="binding_model_id" ref="model_account_move"/>
+        <field name="binding_type">report</field>
+        <field name="is_docx_report" eval="True"/>  
+    </record>
+    
+    <record id="action_report_with_test_docx" model="ir.actions.report">
+        <field name="name">With Test DOCX</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-html</field> <!-- must generate PDF -->
+        <field name="report_name">bd_calling_billing_management.report_with_test</field> <!-- PDF report -->
+        <field name="print_report_name">'Standard_Invoice_' + (object.name or 'Draft') + '.docx'</field>
+        <field name="binding_model_id" ref="model_account_move"/>
+        <field name="binding_type">report</field>
+        <field name="is_docx_report" eval="True"/>  
+        
+    </record>
 </odoo>

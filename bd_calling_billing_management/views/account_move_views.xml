@@ -11,6 +11,7 @@
                 <field name="total_test" readonly="1"/>
                 <field name="price_per_test" readonly="1"/>
             </xpath>
+            
         </field>
     </record>
 </odoo>

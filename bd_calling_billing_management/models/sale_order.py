@@ -1,4 +1,5 @@
 import logging
+import base64
 
 from odoo import models, fields, api
 _logger = logging.getLogger(__name__)
@@ -236,14 +237,39 @@ class AccountMove(models.Model):
             
             invoice.custom_chalian_number = ', '.join(delivery_ids) if delivery_ids else False
     
-    def action_print_custom_quotation(self):
-        """Print custom quotation without test data"""
-        return self.env.ref('estate_report.action_report_custom_quotation').report_action(self)
+    # def action_print_custom_quotation(self):
+    #     """Print custom quotation without test data"""
+    #     return self.env.ref('estate_report.action_report_custom_quotation').report_action(self)
     
-    def action_print_with_test(self):
-        """Print standard format WITH test fields"""
-        return self.env.ref('bd_calling_billing_management.action_report_with_test').report_action(self)
+    # def action_print_with_test(self):
+    #     """Print standard format WITH test fields"""
+    #     return self.env.ref('bd_calling_billing_management.action_report_with_test').report_action(self)
+   
+    def action_print_without_test_docx(self):
+        """Print invoice without test - DOCX version"""
+        self.ensure_one()
+        return self.env.ref('docx_reports.action_report_custom_quotation_docx').report_action(self)
     
+    def action_custom_menu(self):
+        """Print invoice with test - DOCX version"""
+        self.ensure_one()
+        return self.env.ref('docx_reports.action_report_with_test_docx').report_action(self)
+    
+    def action_print_smart_format(self):
+        """Smart print - shows format selection"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Select Report Format'),
+            'res_model': 'select.report.format',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_invoice_id': self.id,
+                'default_has_test': bool(self.invoice_line_ids.filtered(lambda l: l.test_per_unit > 0))
+            }
+        }
+        
 class AccountMoveLine(models.Model):
     _inherit = 'account.move.line'
     
