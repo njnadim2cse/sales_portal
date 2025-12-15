@@ -22,7 +22,16 @@
         <field name="binding_type">report</field>
          <field name="is_docx_report" eval="False"/>  
     </record>
-    
+    <record id="action_report_invoice_mushak" model="ir.actions.report">
+        <field name="name">Mushak Invoice</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bd_calling_billing_management.report_invoice_mushak_document</field>
+        <field name="print_report_name">'Mushak_Invoice_' + (object.name or 'Draft') + '.pdf'</field>
+        <field name="binding_model_id" ref="model_account_move"/>
+        <field name="binding_type">report</field>
+    </record>
+
     <!-- DOCX Reports - generate PDF first, then controller converts to DOCX -->
     <record id="action_report_custom_quotation_docx" model="ir.actions.report">
         <field name="name">Without Test DOCX</field>

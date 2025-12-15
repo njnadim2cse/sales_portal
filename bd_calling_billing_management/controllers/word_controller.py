@@ -1,11 +1,7 @@
-# controllers/docx_fixed.py
 from odoo.http import Controller, route, request
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
 import json
 import logging
 import io
-import fitz
 
 _logger = logging.getLogger(__name__)
 

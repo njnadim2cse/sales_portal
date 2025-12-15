@@ -84,7 +84,127 @@ class SalesPortalController(CustomerPortal):
                 continue
         
         if not has_access:
-            return request.redirect('/web')
+            # Return access denied HTML page instead of redirecting to /web
+            html = """
+            <html>
+            <head>
+                <title>Access Denied</title>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                        margin: 0;
+                        padding: 0;
+                        min-height: 100vh;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .access-denied-container {
+                        background: white;
+                        border-radius: 15px;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                        padding: 40px;
+                        text-align: center;
+                        max-width: 600px;
+                        width: 90%;
+                        margin: 20px;
+                    }
+                    .access-denied-icon {
+                        font-size: 80px;
+                        color: #ff6b6b;
+                        margin-bottom: 20px;
+                    }
+                    .access-denied-title {
+                        color: #dc3545;
+                        margin-bottom: 15px;
+                        font-size: 28px;
+                    }
+                    .access-denied-message {
+                        color: #495057;
+                        font-size: 18px;
+                        line-height: 1.6;
+                        margin-bottom: 25px;
+                    }
+                    .portal-badges {
+                        display: flex;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        gap: 10px;
+                        margin: 20px 0;
+                    }
+                    .portal-badge {
+                        padding: 8px 16px;
+                        border-radius: 20px;
+                        font-weight: 600;
+                        font-size: 14px;
+                    }
+                    .badge-sales { background: #007bff; color: white; }
+                    .badge-service { background: #28a745; color: white; }
+                    .badge-contact { background: #17a2b8; color: white; }
+                    .badge-quotation { background: #ffc107; color: #212529; }
+                    .contact-admin {
+                        margin-top: 25px;
+                        padding-top: 20px;
+                        border-top: 1px solid #dee2e6;
+                        color: #6c757d;
+                        font-size: 14px;
+                    }
+                    @media (max-width: 768px) {
+                        .access-denied-container {
+                            padding: 25px;
+                        }
+                        .action-buttons {
+                            flex-direction: column;
+                        }
+                        .btn {
+                            width: 100%;
+                        }
+                    }
+                </style>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            </head>
+            <body>
+                <div class="access-denied-container">
+                    <!-- Icon -->
+                    <div class="access-denied-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    
+                    <!-- Title -->
+                    <h1 class="access-denied-title">
+                        <i class="fas fa-ban"></i> Access Denied
+                    </h1>
+                    
+                    <!-- Message -->
+                    <div class="access-denied-message">
+                        <p>You don't have access to any portal features.</p>
+                        <p>Please contact your administrator to grant you access to one or more portals.</p>
+                    </div>
+                    
+                    <!-- Portal Badges -->
+                    <div class="portal-badges">
+                        <span class="portal-badge badge-sales">Sales Portal</span>
+                        <span class="portal-badge badge-service">Service Portal</span>
+                        <span class="portal-badge badge-contact">Contact Portal</span>
+                        <span class="portal-badge badge-quotation">Quotation Portal</span>
+                    </div>
+                    
+                    <!-- Contact Admin -->
+                    <div class="contact-admin">
+                        <p>
+                            <i class="fas fa-user-shield"></i>
+                            Need access? Please contact your system administrator.
+                        </p>
+                    </div>
+                </div>
+                
+            </body>
+            </html>
+            """
+            return html
         
         # Get portal access flags
         portal_access = self._get_portal_access_flags()
@@ -290,6 +410,34 @@ class SalesPortalController(CustomerPortal):
         return request.render('sales_management_portal.task_view_template', all_values)
 
     # --------------------------------------------------------------------
+    # VIEW TASK MODAL
+    # --------------------------------------------------------------------
+    @http.route('/sales_management/task/modal_view/<int:task_id>', type='http', auth='user', website=True)
+    def task_modal_view(self, task_id, **kw):
+        """Return task details for modal view"""
+        try:
+            task = request.env['task.management'].sudo().browse(task_id)
+            
+            # Check if user has access to this task
+            if not task.exists() or task.create_uid.id != request.env.user.id:
+                return request.render('sales_management_portal.task_modal_view_template', {'task': False})
+            
+            # Get portal access flags
+            portal_access = self._get_portal_access_flags()
+            values = self._prepare_portal_layout_values()
+            
+            all_values = {
+                'task': task,
+                **portal_access,
+                **values,
+            }
+            
+            return request.render('sales_management_portal.task_modal_view_template', all_values)
+        except Exception as e:
+            logger.error(f"Error loading task modal view: {str(e)}")
+            return request.render('sales_management_portal.task_modal_view_template', {'task': False})
+
+    # --------------------------------------------------------------------
     # CREATE TASK
     # --------------------------------------------------------------------
     @http.route('/sales_management/create_task/<string:team>', type='http', auth='user', website=True)
@@ -340,51 +488,52 @@ class SalesPortalController(CustomerPortal):
     # --------------------------------------------------------------------
     # SUBMIT TASK
     # --------------------------------------------------------------------
-    @http.route('/sales_management/submit_task', type='http', auth='user', methods=['POST'], website=True, csrf=True)
+    @http.route('/sales_management/submit_task', type='http', auth='user',
+            methods=['POST'], website=True, csrf=True)
     def submit_task(self, **kw):
-        """Submit Task with All Fields"""
+
         team = kw.get('team') or 'sales'
         if team not in ('sales', 'service'):
             team = 'sales'
 
-        # Build task values
         vals = {
             'task_title': kw.get('task_title'),
-            'task_team': team,  # Server-side enforcement
+            'task_team': team,
         }
 
-        # Optional fields
         if kw.get('employee_id'):
             vals['employee_id'] = int(kw.get('employee_id'))
-        
+
         if kw.get('customer_id'):
             vals['customer_id'] = int(kw.get('customer_id'))
-        
+
         if kw.get('visit_date'):
             vals['visit_date'] = kw.get('visit_date')
-        
-        if kw.get('time_in_dt'):
-            vals['time_in_dt'] = kw.get('time_in_dt')
-        
-        if kw.get('time_out_dt'):
-            vals['time_out_dt'] = kw.get('time_out_dt')
-        
+
         if kw.get('purpose_id'):
             vals['purpose_id'] = int(kw.get('purpose_id'))
-        
+
         if kw.get('analyzer'):
             vals['analyzer'] = kw.get('analyzer')
-        
+
         if kw.get('reagents'):
             vals['reagents'] = kw.get('reagents')
-        
+
         if kw.get('remarks'):
             vals['remarks'] = kw.get('remarks')
-        
-        if kw.get('tags'):
-            vals['tags'] = kw.get('tags')
 
-        # Create task
+
+        # ✅ SERVICE ONLY
+        if team == 'service':
+            if kw.get('time_in_dt'):
+                vals['time_in_dt'] = kw.get('time_in_dt')
+
+            if kw.get('time_out_dt'):
+                vals['time_out_dt'] = kw.get('time_out_dt')
+
+            if kw.get('warranty_type'):
+                vals['warranty_type'] = kw.get('warranty_type')
+
         request.env['task.management'].sudo().create(vals)
 
         return request.redirect(f'/sales_management/{team}?success=1')
@@ -396,37 +545,56 @@ class SalesPortalController(CustomerPortal):
         """Contacts List View"""
         # Check portal access
         if not self._check_portal_access('use_contact_portal'):
-            return request.redirect('/sales_management')
+            return request.redirect('/dashboard')
         
-        # Get contacts where the current user is the salesman
-        user_id = request.env.user.id
-        contacts = request.env['res.partner'].sudo().search([
-            ('user_id', '=', user_id)
-        ])
+        # Get domain for contacts
+        domain = []
+        
+        # Handle user filter
+        user_filter = kw.get('user_filter', '')
+        selected_user = None
+        if user_filter:
+            try:
+                user_id = int(user_filter)
+                domain.append(('user_id', '=', user_id))
+                selected_user = request.env['res.users'].sudo().browse(user_id)
+            except (ValueError, Exception):
+                pass
+        
+        # Get contacts with domain
+        contacts = request.env['res.partner'].sudo().search(domain)
         
         # Handle search
         search_term = kw.get('search', '')
         if search_term:
             contacts = contacts.filtered(lambda c: 
-                search_term.lower() in (c.name or '').lower() or
+                search_term.lower() in (c.complete_name or '').lower() or
                 search_term.lower() in (c.email or '').lower() or
                 search_term.lower() in (c.phone or '').lower() or
                 search_term.lower() in (c.city or '').lower() or
                 search_term.lower() in (c.state_id.name or '').lower() or
                 search_term.lower() in (c.country_id.name or '').lower()
             )
+        
+        # Get all active users for the filter dropdown
+        sales_users = request.env['res.users'].sudo().search([
+            # ('active', '=', True),
+        ])
+        
         message = kw.get('success') and "🎉 Your Contact has been created successfully!" or False
 
         # Get portal access flags and layout values
         portal_access = self._get_portal_access_flags()
-        values = self._prepare_portal_layout_values()
         
         all_values = {
             'contacts': contacts,
             'search_term': search_term,
+            'user_filter': user_filter,
+            'selected_user': selected_user,
+            'sales_users': sales_users,
             'message': message,
             **portal_access,
-            **values,
+            'no_footer': True,
         }
         
         return request.render('sales_management_portal.contacts_list', all_values)
@@ -571,15 +739,15 @@ class SalesPortalController(CustomerPortal):
         contact = request.env['res.partner'].sudo().browse(contact_id)
         
         # Security check - ensure user can only view their own contacts
-        if contact.user_id.id != request.env.user.id:
-            return request.redirect('/sales_management/contacts')
+        # if contact.user_id.id != request.env.user.id:
+        #     return request.redirect('/sales_management/contacts')
         
         # Get child contacts for companies
         child_contacts = []
         if contact.is_company:
             child_contacts = request.env['res.partner'].sudo().search([
                 ('parent_id', '=', contact.id),
-                ('user_id', '=', request.env.user.id)
+                # ('user_id', '=', request.env.user.id)
             ])
         
         # Get portal access flags and layout values
@@ -605,8 +773,8 @@ class SalesPortalController(CustomerPortal):
         contact = request.env['res.partner'].sudo().browse(contact_id)
         
         # Security check - ensure user can only view their own contacts
-        if contact.user_id.id != request.env.user.id:
-            return request.redirect('/sales_management/contacts')
+        # if contact.user_id.id != request.env.user.id:
+        #     return request.redirect('/sales_management/contacts')
         
         # Get portal access flags and layout values
         portal_access = self._get_portal_access_flags()
@@ -855,6 +1023,11 @@ class SalesPortalController(CustomerPortal):
                 ('state', 'ilike', search_term)
             ])
         
+        # Handle status filter
+        status_filter = kw.get('status_filter', '')
+        if status_filter:
+            domain.append(('state', '=', status_filter))
+        
         # Handle date range filter
         date_from = kw.get('date_from')
         date_to = kw.get('date_to')
@@ -871,8 +1044,19 @@ class SalesPortalController(CustomerPortal):
             except ValueError:
                 pass
         
-        quotations = request.env['sale.order'].sudo().search(domain, order='name DESC') #create_date
-
+        quotations = request.env['sale.order'].sudo().search(domain, order='name DESC')
+        
+        # Calculate total amount sum
+        total_amount_sum = sum(quotations.mapped('amount_total') or [0])
+        
+        # Status choices for dropdown
+        status_choices = [
+            ('draft', 'Quotation'),
+            ('sent', 'Quotation Sent'),
+            ('sale', 'Sales Order'),
+            ('cancel', 'Cancelled')
+        ]
+        
         message = kw.get('success') and "🎉 Your Quotation has been created successfully!" or False
         # Get portal access flags and layout values
         portal_access = self._get_portal_access_flags()
@@ -881,8 +1065,11 @@ class SalesPortalController(CustomerPortal):
         all_values = {
             'quotations': quotations,
             'search_term': search_term,
+            'status_filter': status_filter,
             'date_from': date_from,
             'date_to': date_to,
+            'total_amount_sum': total_amount_sum,
+            'status_choices': status_choices,
             'message': message,
             **portal_access,
             **values,

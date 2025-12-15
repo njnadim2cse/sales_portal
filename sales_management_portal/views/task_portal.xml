@@ -4,383 +4,483 @@
 
     <!-- Fully Responsive Task List Template -->
     <template id="task_list_template" name="Task List">
-        <t t-call="website.layout">
-            <t t-set="head">
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-                <style>
-                    /* Sidebar Styles - MATCHES DASHBOARD */
+        <html>
+        <head>
+            <meta charset="utf-8"/>
+            <title>Task Portal | List</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <style>
+                /* Your existing sidebar CSS */
+                .dashboard-sidebar {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    height: 100vh;
+                    width: 280px;
+                    background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                    z-index: 100;
+                }
+                
+                .dashboard-content {
+                    margin-left: 280px;
+                    padding: 20px;
+                }
+                
+                /* Custom header with user dropdown */
+                .custom-header {
+                    background: #fff;
+                    border-bottom: 1px solid #dee2e6;
+                    padding: 10px 20px;
+                    position: sticky;
+                    top: 0;
+                    z-index: 1000;
+                }
+                /* Sidebar Styles - MATCHES DASHBOARD */
+                .dashboard-sidebar {
+                    position: fixed;
+                    top: 70px;
+                    left: 0;
+                    height: calc(100vh - 70px);
+                    width: 280px;
+                    background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                    border-right: none;
+                    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+                    z-index: 1000;
+                    padding-top: 20px;
+                    overflow-y: auto;
+                    transition: all 0.3s ease;
+                }
+
+                .dashboard-sidebar .sidebar-header {
+                    padding: 0 25px 20px;
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                    margin-bottom: 15px;
+                }
+
+                .dashboard-sidebar .sidebar-header h4 {
+                    color: white;
+                    font-weight: 600;
+                    margin: 0;
+                    font-size: 1.2rem;
+                }
+
+                .dashboard-sidebar .list-group-item {
+                    border: none;
+                    border-radius: 12px;
+                    padding: 16px 20px;
+                    margin: 4px 15px;
+                    font-weight: 500;
+                    color: rgba(255,255,255,0.9);
+                    background: transparent;
+                    transition: all 0.3s ease;
+                    border-left: 3px solid transparent;
+                }
+
+                .dashboard-sidebar .list-group-item:hover {
+                    background: rgba(255,255,255,0.1);
+                    color: white;
+                    border-left-color: #e74c3c;
+                    transform: translateX(5px);
+                }
+
+                .dashboard-sidebar .list-group-item.active {
+                    background: rgba(255,255,255,0.15);
+                    color: white;
+                    border-left-color: #e74c3c;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                }
+
+                .dashboard-sidebar .list-group-item i {
+                    width: 20px;
+                    text-align: center;
+                    margin-right: 12px;
+                    font-size: 1.1rem;
+                }
+
+                .dashboard-content {
+                    margin-left: 300px;
+                    padding: 30px;
+                    min-height: calc(100vh - 70px);
+                    background: #f8fafc;
+                    width: calc(100% - 300px);
+                    overflow-x: hidden; /* Prevent horizontal scroll */
+                }
+
+                /* Success Message */
+                .success-message {
+                    position: fixed;
+                    top: 80px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 9999;
+                    min-width: 400px;
+                    max-width: 600px;
+                    background: linear-gradient(135deg, #27ae60, #2ecc71);
+                    color: white;
+                    padding: 20px 30px;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 40px rgba(39, 174, 96, 0.4);
+                    animation: slideDown 0.5s ease-out;
+                }
+
+                .success-message i {
+                    font-size: 1.5rem;
+                    margin-right: 15px;
+                }
+
+                @keyframes slideDown {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-50%) translateY(-30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(-50%) translateY(0);
+                    }
+                }
+
+                /* Card Styles - MATCHES DASHBOARD */
+                .card {
+                    border: none;
+                    border-radius: 16px;
+                    box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                    margin-bottom: 25px;
+                    overflow: hidden;
+                    width: 100%;
+                }
+
+                .card-header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    padding: 20px 25px;
+                    border-radius: 16px 16px 0 0;
+                }
+
+                .card-header h4 {
+                    margin: 0;
+                    font-weight: 600;
+                }
+
+                /* Filter Panel */
+                .filter-panel {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+                    width: 100%;
+                    overflow: visible;
+                }
+
+                /* Desktop Table Styles - FIXED WIDTH */
+                .table-responsive {
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                    width: 100%;
+                }
+
+                .desktop-table {
+                    width: 100%;
+                    min-width: 600px; /* Minimum width for table */
+                }
+
+                .desktop-table thead th {
+                    background: #2c3e50;
+                    color: white;
+                    border: none;
+                    padding: 16px 12px;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    white-space: nowrap;
+                }
+
+                .desktop-table tbody tr {
+                    transition: all 0.3s ease;
+                }
+
+                .desktop-table tbody tr:hover {
+                    background: #f8f9fa;
+                }
+
+                .desktop-table tbody td {
+                    padding: 16px 12px;
+                    vertical-align: middle;
+                    border-bottom: 1px solid #f1f3f4;
+                }
+
+                /* Mobile Card Layout */
+                .mobile-cards {
+                    display: none;
+                }
+
+                .task-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin-bottom: 15px;
+                    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+                    transition: all 0.3s ease;
+                    width: 100%;
+                }
+
+                .task-card:hover {
+                    box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+                }
+
+                .task-card-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: start;
+                    margin-bottom: 15px;
+                    padding-bottom: 15px;
+                    border-bottom: 2px solid #f1f3f4;
+                }
+
+                .task-card-title {
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    color: #2c3e50;
+                    margin: 0;
+                }
+
+                .task-card-body {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: 12px;
+                }
+
+                .task-info-item {
+                    display: flex;
+                    align-items: center;
+                    padding: 8px 0;
+                }
+
+                .task-info-label {
+                    font-weight: 600;
+                    color: #7f8c8d;
+                    min-width: 100px;
+                    font-size: 0.85rem;
+                    text-transform: uppercase;
+                }
+
+                .task-info-value {
+                    color: #2c3e50;
+                    font-size: 0.95rem;
+                    word-break: break-word;
+                }
+
+                .btn-primary {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border: none;
+                    border-radius: 10px;
+                    padding: 12px 24px;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                }
+
+                .btn-primary:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                }
+
+                /* View Task Button Style */
+                .view-task-btn {
+                    background: linear-gradient(135deg, #3498db, #2980b9);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 8px 16px;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+
+                .view-task-btn:hover {
+                    background: linear-gradient(135deg, #2980b9, #1c6ea4);
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+                    color: white;
+                }
+
+                /* Pagination */
+                .pagination {
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    margin-top: 20px;
+                }
+
+                /* Responsive Breakpoints - FIXED FOR NO HORIZONTAL SCROLL */
+                @media (max-width: 1200px) {
                     .dashboard-sidebar {
-                        position: fixed;
-                        top: 70px;
-                        left: 0;
-                        height: calc(100vh - 70px);
-                        width: 280px;
-                        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                        border-right: none;
-                        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
-                        z-index: 1000;
-                        padding-top: 20px;
-                        overflow-y: auto;
-                        transition: all 0.3s ease;
+                        width: 250px;
                     }
-
-                    .dashboard-sidebar .sidebar-header {
-                        padding: 0 25px 20px;
-                        border-bottom: 1px solid rgba(255,255,255,0.1);
-                        margin-bottom: 15px;
-                    }
-
-                    .dashboard-sidebar .sidebar-header h4 {
-                        color: white;
-                        font-weight: 600;
-                        margin: 0;
-                        font-size: 1.2rem;
-                    }
-
-                    .dashboard-sidebar .list-group-item {
-                        border: none;
-                        border-radius: 12px;
-                        padding: 16px 20px;
-                        margin: 4px 15px;
-                        font-weight: 500;
-                        color: rgba(255,255,255,0.9);
-                        background: transparent;
-                        transition: all 0.3s ease;
-                        border-left: 3px solid transparent;
-                    }
-
-                    .dashboard-sidebar .list-group-item:hover {
-                        background: rgba(255,255,255,0.1);
-                        color: white;
-                        border-left-color: #e74c3c;
-                        transform: translateX(5px);
-                    }
-
-                    .dashboard-sidebar .list-group-item.active {
-                        background: rgba(255,255,255,0.15);
-                        color: white;
-                        border-left-color: #e74c3c;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                    }
-
-                    .dashboard-sidebar .list-group-item i {
-                        width: 20px;
-                        text-align: center;
-                        margin-right: 12px;
-                        font-size: 1.1rem;
-                    }
-
                     .dashboard-content {
-                        margin-left: 300px;
-                        padding: 30px;
-                        min-height: calc(100vh - 70px);
-                        background: #f8fafc;
-                        width: calc(100% - 300px);
-                        overflow-x: hidden; /* Prevent horizontal scroll */
+                        margin-left: 270px;
+                        width: calc(100% - 270px);
                     }
+                }
 
-                    /* Success Message */
-                    .success-message {
-                        position: fixed;
-                        top: 80px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        z-index: 9999;
-                        min-width: 400px;
-                        max-width: 600px;
-                        background: linear-gradient(135deg, #27ae60, #2ecc71);
-                        color: white;
-                        padding: 20px 30px;
-                        border-radius: 12px;
-                        box-shadow: 0 10px 40px rgba(39, 174, 96, 0.4);
-                        animation: slideDown 0.5s ease-out;
+                @media (max-width: 992px) {
+                    .dashboard-sidebar {
+                        width: 100%;
+                        height: auto;
+                        position: relative;
+                        top: 0;
                     }
-
-                    .success-message i {
-                        font-size: 1.5rem;
-                        margin-right: 15px;
-                    }
-
-                    @keyframes slideDown {
-                        from {
-                            opacity: 0;
-                            transform: translateX(-50%) translateY(-30px);
-                        }
-                        to {
-                            opacity: 1;
-                            transform: translateX(-50%) translateY(0);
-                        }
-                    }
-
-                    /* Card Styles - MATCHES DASHBOARD */
-                    .card {
-                        border: none;
-                        border-radius: 16px;
-                        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
-                        margin-bottom: 25px;
-                        overflow: hidden;
+                    
+                    .dashboard-content {
+                        margin-left: 0;
+                        padding: 20px 15px;
                         width: 100%;
                     }
 
-                    .card-header {
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                        border: none;
-                        padding: 20px 25px;
-                        border-radius: 16px 16px 0 0;
-                    }
-
-                    .card-header h4 {
-                        margin: 0;
-                        font-weight: 600;
-                    }
-
-                    /* Filter Panel */
-                    .filter-panel {
-                        background: white;
-                        border-radius: 12px;
-                        padding: 20px;
-                        margin-bottom: 20px;
-                        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-                        width: 100%;
-                        overflow: visible;
-                    }
-
-                    /* Desktop Table Styles - FIXED WIDTH */
-                    .table-responsive {
-                        overflow-x: auto;
-                        -webkit-overflow-scrolling: touch;
-                        width: 100%;
-                    }
-
+                    /* Switch to card layout on tablets */
                     .desktop-table {
-                        width: 100%;
-                        min-width: 600px; /* Minimum width for table */
-                    }
-
-                    .desktop-table thead th {
-                        background: #2c3e50;
-                        color: white;
-                        border: none;
-                        padding: 16px 12px;
-                        font-weight: 600;
-                        font-size: 0.9rem;
-                        white-space: nowrap;
-                    }
-
-                    .desktop-table tbody tr {
-                        transition: all 0.3s ease;
-                    }
-
-                    .desktop-table tbody tr:hover {
-                        background: #f8f9fa;
-                    }
-
-                    .desktop-table tbody td {
-                        padding: 16px 12px;
-                        vertical-align: middle;
-                        border-bottom: 1px solid #f1f3f4;
-                    }
-
-                    /* Mobile Card Layout */
-                    .mobile-cards {
                         display: none;
                     }
 
-                    .task-card {
-                        background: white;
-                        border-radius: 12px;
-                        padding: 20px;
+                    .mobile-cards {
+                        display: block;
+                    }
+
+                    .success-message {
+                        min-width: 90%;
+                        left: 5%;
+                        transform: none;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    /* Filter Panel - Stack vertically on mobile */
+                    .filter-panel .row {
+                        flex-direction: column;
+                    }
+
+                    .filter-panel .col-md-4,
+                    .filter-panel .col-md-2,
+                    .filter-panel .col-12 {
+                        width: 100%;
                         margin-bottom: 15px;
-                        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-                        transition: all 0.3s ease;
+                    }
+
+                    .filter-panel input,
+                    .filter-panel select {
                         width: 100%;
                     }
 
-                    .task-card:hover {
-                        box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+                    /* Page Header */
+                    .page-header-mobile {
+                        flex-direction: column;
+                        align-items: flex-start !important;
+                        gap: 15px;
                     }
 
-                    .task-card-header {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: start;
-                        margin-bottom: 15px;
-                        padding-bottom: 15px;
-                        border-bottom: 2px solid #f1f3f4;
+                    .page-header-mobile .btn {
+                        width: 100%;
+                    }
+
+                    /* Card Header */
+                    .card-header h4 {
+                        font-size: 1.1rem;
+                    }
+
+                    /* Task Cards - Better spacing */
+                    .task-card {
+                        padding: 15px;
                     }
 
                     .task-card-title {
-                        font-size: 1.1rem;
-                        font-weight: 600;
-                        color: #2c3e50;
-                        margin: 0;
-                    }
-
-                    .task-card-body {
-                        display: grid;
-                        grid-template-columns: 1fr;
-                        gap: 12px;
-                    }
-
-                    .task-info-item {
-                        display: flex;
-                        align-items: center;
-                        padding: 8px 0;
+                        font-size: 1rem;
                     }
 
                     .task-info-label {
-                        font-weight: 600;
-                        color: #7f8c8d;
-                        min-width: 100px;
-                        font-size: 0.85rem;
-                        text-transform: uppercase;
+                        min-width: 90px;
+                        font-size: 0.75rem;
                     }
 
                     .task-info-value {
-                        color: #2c3e50;
-                        font-size: 0.95rem;
-                        word-break: break-word;
+                        font-size: 0.9rem;
                     }
 
                     .btn-primary {
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        border: none;
-                        border-radius: 10px;
-                        padding: 12px 24px;
-                        font-weight: 600;
-                        transition: all 0.3s ease;
+                        padding: 10px 20px;
+                        font-size: 0.9rem;
                     }
 
-                    .btn-primary:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                    .view-task-btn {
+                        padding: 6px 12px;
+                        font-size: 0.8rem;
+                    }
+                }
+
+                @media (max-width: 576px) {
+                    .dashboard-content {
+                        padding: 15px 10px;
                     }
 
-                    /* Pagination */
-                    .pagination {
-                        flex-wrap: wrap;
-                        justify-content: center;
-                        margin-top: 20px;
+                    .filter-panel {
+                        padding: 15px;
                     }
 
-                    /* Responsive Breakpoints - FIXED FOR NO HORIZONTAL SCROLL */
-                    @media (max-width: 1200px) {
-                        .dashboard-sidebar {
-                            width: 250px;
-                        }
-                        .dashboard-content {
-                            margin-left: 270px;
-                            width: calc(100% - 270px);
-                        }
+                    .card-header {
+                        padding: 15px;
                     }
-
-                    @media (max-width: 992px) {
-                        .dashboard-sidebar {
-                            width: 100%;
-                            height: auto;
-                            position: relative;
-                            top: 0;
-                        }
+                }
+            </style>
+        </head>
+        <body>
+            <!-- Custom Header -->
+            <header class="custom-header d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="/" class="d-flex align-items-center" style="text-decoration: none; color: inherit;">
+                        <!-- Logo Image -->
+                        <!-- <img src="./static/companylogo/ABC_Logo.jpg" alt="ABC Corporation" height="40" style="max-height: 40px; margin-right: 12px;"/> -->
+                        <!-- Text -->
+                        <h4 class="mb-0" style="font-weight: 600;">Advanced ABC Group</h4>
+                    </a>
+                </div>
+                
+                <!-- Manual User Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" 
+                            id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-user me-2"></i>
+                        <span id="userName"><t t-esc="request.env.user.name"/></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuDropdown">
+                        <!-- Show Apps link only for internal users -->
+                        <t t-if="request.env.user.share == False">
+                            <li>
+                                <a class="dropdown-item" href="/web">
+                                    <i class="fa fa-th me-2"></i>Apps
+                                </a>
+                            </li>
+                        </t>
                         
-                        .dashboard-content {
-                            margin-left: 0;
-                            padding: 20px 15px;
-                            width: 100%;
-                        }
-
-                        /* Switch to card layout on tablets */
-                        .desktop-table {
-                            display: none;
-                        }
-
-                        .mobile-cards {
-                            display: block;
-                        }
-
-                        .success-message {
-                            min-width: 90%;
-                            left: 5%;
-                            transform: none;
-                        }
-                    }
-
-                    @media (max-width: 768px) {
-                        /* Filter Panel - Stack vertically on mobile */
-                        .filter-panel .row {
-                            flex-direction: column;
-                        }
-
-                        .filter-panel .col-md-4,
-                        .filter-panel .col-md-2,
-                        .filter-panel .col-12 {
-                            width: 100%;
-                            margin-bottom: 15px;
-                        }
-
-                        .filter-panel input,
-                        .filter-panel select {
-                            width: 100%;
-                        }
-
-                        /* Page Header */
-                        .page-header-mobile {
-                            flex-direction: column;
-                            align-items: flex-start !important;
-                            gap: 15px;
-                        }
-
-                        .page-header-mobile .btn {
-                            width: 100%;
-                        }
-
-                        /* Card Header */
-                        .card-header h4 {
-                            font-size: 1.1rem;
-                        }
-
-                        /* Task Cards - Better spacing */
-                        .task-card {
-                            padding: 15px;
-                        }
-
-                        .task-card-title {
-                            font-size: 1rem;
-                        }
-
-                        .task-info-label {
-                            min-width: 90px;
-                            font-size: 0.75rem;
-                        }
-
-                        .task-info-value {
-                            font-size: 0.9rem;
-                        }
-
-                        .btn-primary {
-                            padding: 10px 20px;
-                            font-size: 0.9rem;
-                        }
-                    }
-
-                    @media (max-width: 576px) {
-                        .dashboard-content {
-                            padding: 15px 10px;
-                        }
-
-                        .filter-panel {
-                            padding: 15px;
-                        }
-
-                        .card-header {
-                            padding: 15px;
-                        }
-                    }
-                </style>
-            </t>
-
+                        <!-- My Account for all users -->
+                        <li>
+                            <a class="dropdown-item" href="/my/home">
+                                <i class="fa fa-cog me-2"></i>My Account
+                            </a>
+                        </li>
+                        
+                        <li><hr class="dropdown-divider"/></li>
+                        
+                        <!-- Logout for all users -->
+                        <li>
+                            <a class="dropdown-item text-danger" href="/web/session/logout">
+                                <i class="fa fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </header>
             <div class="container-fluid p-0">
                 <div class="row g-0">
                     <!-- Sidebar -->
@@ -543,10 +643,10 @@
                                                     <td t-esc="task.visit_date.strftime('%Y-%m-%d') if task.visit_date else '-'"/>
                                                     <td t-esc="task.employee_id.name if task.employee_id else '-'"/>
                                                     <td>
-                                                        <a t-att-href="'/sales_management/task/%s' % task.id"
-                                                        class="btn btn-sm btn-outline-primary">
+                                                        <button type="button" class="btn view-task-btn view-task-modal-btn" 
+                                                                t-att-data-task-id="task.id">
                                                             <i class="fa fa-eye"></i> View
-                                                        </a>
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             </t>
@@ -572,10 +672,10 @@
                                         <div class="task-card">
                                             <div class="task-card-header">
                                                 <h5 class="task-card-title" t-esc="task.task_title"/>
-                                                <a t-att-href="'/sales_management/task/%s' % task.id"
-                                                class="btn btn-sm btn-outline-primary">
+                                                <button type="button" class="btn view-task-btn view-task-modal-btn" 
+                                                        t-att-data-task-id="task.id">
                                                     <i class="fa fa-eye"></i>
-                                                </a>
+                                                </button>
                                             </div>
                                             <div class="task-card-body">
                                                 <div class="task-info-item">
@@ -632,10 +732,25 @@
                 </div>
             </div>
 
+            <!-- Task View Modal -->
+            <div class="modal fade" id="taskViewModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Task Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="taskViewContent">
+                            <!-- Content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script>
             <![CDATA[
-                 // Auto-hide success message after 5 seconds
+                // Auto-hide success message after 5 seconds
                 document.addEventListener('DOMContentLoaded', function() {
                     const successMessage = document.getElementById('successMessage');
                     if (successMessage) {
@@ -661,247 +776,395 @@
                             link.classList.add('active');
                         }
                     });
+
+                    // Add event listeners for view buttons
+                    document.querySelectorAll('.view-task-modal-btn').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const taskId = this.getAttribute('data-task-id');
+                            if (taskId) {
+                                viewTask(taskId);
+                            }
+                        });
+                    });
                 });
+
+                // Function to view task in modal
+                function viewTask(taskId) {
+                    // Show loading state
+                    const modalContent = document.getElementById('taskViewContent');
+                    if (!modalContent) {
+                        console.error('Task modal content not found');
+                        return;
+                    }
+                    
+                    modalContent.innerHTML = '<div class="text-center p-4"><div class="spinner-border" role="status"></div><p class="mt-2">Loading task details...</p></div>';
+                    
+                    // Show modal FIRST
+                    const modalElement = document.getElementById('taskViewModal');
+                    if (!modalElement) {
+                        console.error('Task modal element not found');
+                        return;
+                    }
+                    
+                    // Use Bootstrap modal if available
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                    } else {
+                        // Fallback
+                        modalElement.style.display = 'block';
+                        modalElement.classList.add('show');
+                    }
+                    
+                    // Then load content
+                    fetch('/sales_management/task/modal_view/' + taskId)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok: ' + response.status);
+                            }
+                            return response.text();
+                        })
+                        .then(html => {
+                            modalContent.innerHTML = html;
+                        })
+                        .catch(error => {
+                            console.error('Error loading task:', error);
+                            modalContent.innerHTML = '<div class="alert alert-danger">Error loading task details. Please try again.</div>';
+                        });
+                }
+
+                // Close function for task modal
+                function closeTaskModal() {
+                    const modalElement = document.getElementById('taskViewModal');
+                    if (!modalElement) return;
+                    
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    } else {
+                        modalElement.style.display = 'none';
+                        modalElement.classList.remove('show');
+                    }
+                }
             ]]>
             </script>
-        </t>
+        </body>
+        </html>
     </template>
 
     <!-- Task Form (Portal Create) -->
     <template id="task_form_template" name="Task Form">
-        <t t-call="website.layout">
-            <t t-set="head">
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-                <!-- Select2 CSS for Live Search -->
-                <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-                <style>
-                    /* Sidebar Styles - MATCHES DASHBOARD */
+        <html>
+        <head>
+            <meta charset="utf-8"/>
+            <title>Task Portal | Create</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+            <!-- Select2 CSS for Live Search -->
+            <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+            <style>
+                /* Your existing sidebar CSS */
+                .dashboard-sidebar {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    height: 100vh;
+                    width: 280px;
+                    background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                    z-index: 100;
+                }
+                
+                .dashboard-content {
+                    margin-left: 280px;
+                    padding: 20px;
+                }
+                
+                /* Custom header with user dropdown */
+                .custom-header {
+                    background: #fff;
+                    border-bottom: 1px solid #dee2e6;
+                    padding: 10px 20px;
+                    position: sticky;
+                    top: 0;
+                    z-index: 1000;
+                }
+                /* Sidebar Styles - MATCHES DASHBOARD */
+                .dashboard-sidebar {
+                    position: fixed;
+                    top: 70px;
+                    left: 0;
+                    height: calc(100vh - 70px);
+                    width: 280px;
+                    background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+                    border-right: none;
+                    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+                    z-index: 1000;
+                    padding-top: 20px;
+                    overflow-y: auto;
+                    transition: all 0.3s ease;
+                }
+
+                .dashboard-sidebar .sidebar-header {
+                    padding: 0 25px 20px;
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                    margin-bottom: 15px;
+                }
+
+                .dashboard-sidebar .sidebar-header h4 {
+                    color: white;
+                    font-weight: 600;
+                    margin: 0;
+                    font-size: 1.2rem;
+                }
+
+                .dashboard-sidebar .list-group-item {
+                    border: none;
+                    border-radius: 12px;
+                    padding: 16px 20px;
+                    margin: 4px 15px;
+                    font-weight: 500;
+                    color: rgba(255,255,255,0.9);
+                    background: transparent;
+                    transition: all 0.3s ease;
+                    border-left: 3px solid transparent;
+                    display: flex;
+                    align-items: center;
+                    text-decoration: none;
+                }
+
+                .dashboard-sidebar .list-group-item:hover {
+                    background: rgba(255,255,255,0.1);
+                    color: white;
+                    border-left-color: #e74c3c;
+                    transform: translateX(5px);
+                }
+
+                .dashboard-sidebar .list-group-item.active {
+                    background: rgba(255,255,255,0.15);
+                    color: white;
+                    border-left-color: #e74c3c;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                }
+
+                .dashboard-sidebar .list-group-item i {
+                    width: 20px;
+                    text-align: center;
+                    margin-right: 12px;
+                    font-size: 1.1rem;
+                }
+
+                .dashboard-content {
+                    margin-left: 300px;
+                    padding: 30px;
+                    min-height: calc(100vh - 70px);
+                    background: #f8fafc;
+                    width: calc(100% - 300px);
+                    overflow-x: hidden;
+                }
+
+                .card {
+                    border: none;
+                    border-radius: 16px;
+                    box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+                    margin-bottom: 25px;
+                    overflow: hidden;
+                    width: 100%;
+                }
+
+                .card-header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    padding: 20px 25px;
+                    border-radius: 16px 16px 0 0;
+                }
+
+                .card-header h4 {
+                    margin: 0;
+                    font-weight: 600;
+                }
+
+                .form-label {
+                    font-weight: 600;
+                    color: #2c3e50;
+                    margin-bottom: 8px;
+                }
+
+                .section-header {
+                    color: #2c3e50;
+                    font-weight: 600;
+                    margin-bottom: 20px;
+                    padding-bottom: 12px;
+                    border-bottom: 2px solid #3498db;
+                }
+
+                .btn-primary {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border: none;
+                    border-radius: 10px;
+                    padding: 12px 24px;
+                    font-weight: 600;
+                }
+
+                /* Form Layout */
+                .form-container {
+                    max-width: 100%;
+                    overflow: visible;
+                }
+
+                .form-container .row {
+                    margin: 0 -10px;
+                }
+
+                .form-container .col-md-4,
+                .form-container .col-md-6,
+                .form-container .col-12 {
+                    padding: 0 10px;
+                }
+
+                /* Select2 Custom Styling */
+                .select2-container--default .select2-selection--single {
+                    height: 45px;
+                    padding: 8px 12px;
+                    border: 2px solid #e9ecef;
+                    border-radius: 10px;
+                    width: 100%;
+                }
+
+                .select2-container--default .select2-selection--single .select2-selection__rendered {
+                    line-height: 28px;
+                    color: #495057;
+                }
+
+                .select2-container--default .select2-selection--single .select2-selection__arrow {
+                    height: 43px;
+                }
+
+                .select2-dropdown {
+                    border: 2px solid #667eea;
+                    border-radius: 10px;
+                }
+
+                .select2-container--default .select2-results__option--highlighted[aria-selected] {
+                    background-color: #667eea;
+                }
+
+                /* Responsive Design */
+                @media (max-width: 1200px) {
                     .dashboard-sidebar {
-                        position: fixed;
-                        top: 70px;
-                        left: 0;
-                        height: calc(100vh - 70px);
-                        width: 280px;
-                        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                        border-right: none;
-                        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
-                        z-index: 1000;
-                        padding-top: 20px;
-                        overflow-y: auto;
-                        transition: all 0.3s ease;
+                        width: 250px;
                     }
-
-                    .dashboard-sidebar .sidebar-header {
-                        padding: 0 25px 20px;
-                        border-bottom: 1px solid rgba(255,255,255,0.1);
-                        margin-bottom: 15px;
+                    .dashboard-content {
+                        margin-left: 270px;
+                        width: calc(100% - 270px);
                     }
+                }
 
-                    .dashboard-sidebar .sidebar-header h4 {
-                        color: white;
-                        font-weight: 600;
-                        margin: 0;
-                        font-size: 1.2rem;
+                @media (max-width: 992px) {
+                    .dashboard-sidebar {
+                        width: 100%;
+                        height: auto;
+                        position: relative;
+                        top: 0;
                     }
-
-                    .dashboard-sidebar .list-group-item {
-                        border: none;
-                        border-radius: 12px;
-                        padding: 16px 20px;
-                        margin: 4px 15px;
-                        font-weight: 500;
-                        color: rgba(255,255,255,0.9);
-                        background: transparent;
-                        transition: all 0.3s ease;
-                        border-left: 3px solid transparent;
-                        display: flex;
-                        align-items: center;
-                        text-decoration: none;
+                    
+                    .dashboard-content {
+                        margin-left: 0;
+                        padding: 20px 15px;
+                        width: 100%;
                     }
-
-                    .dashboard-sidebar .list-group-item:hover {
-                        background: rgba(255,255,255,0.1);
-                        color: white;
-                        border-left-color: #e74c3c;
-                        transform: translateX(5px);
+                    
+                    .form-container .col-md-4,
+                    .form-container .col-md-6 {
+                        width: 100%;
                     }
+                }
 
-                    .dashboard-sidebar .list-group-item.active {
-                        background: rgba(255,255,255,0.15);
-                        color: white;
-                        border-left-color: #e74c3c;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                @media (max-width: 768px) {
+                    .dashboard-content {
+                        padding: 20px;
                     }
-
-                    .dashboard-sidebar .list-group-item i {
-                        width: 20px;
-                        text-align: center;
-                        margin-right: 12px;
+                    
+                    .card-header {
+                        padding: 15px;
+                    }
+                    
+                    .section-header {
                         font-size: 1.1rem;
                     }
-
-                    .dashboard-content {
-                        margin-left: 300px;
-                        padding: 30px;
-                        min-height: calc(100vh - 70px);
-                        background: #f8fafc;
-                        width: calc(100% - 300px);
-                        overflow-x: hidden;
-                    }
-
-                    .card {
-                        border: none;
-                        border-radius: 16px;
-                        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
-                        margin-bottom: 25px;
-                        overflow: hidden;
-                        width: 100%;
-                    }
-
-                    .card-header {
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                        border: none;
-                        padding: 20px 25px;
-                        border-radius: 16px 16px 0 0;
-                    }
-
-                    .card-header h4 {
-                        margin: 0;
-                        font-weight: 600;
-                    }
-
+                    
                     .form-label {
-                        font-weight: 600;
-                        color: #2c3e50;
-                        margin-bottom: 8px;
+                        font-size: 0.9rem;
                     }
+                }
 
-                    .section-header {
-                        color: #2c3e50;
-                        font-weight: 600;
-                        margin-bottom: 20px;
-                        padding-bottom: 12px;
-                        border-bottom: 2px solid #3498db;
+                @media (max-width: 576px) {
+                    .dashboard-content {
+                        padding: 15px 10px;
                     }
-
+                    
+                    .card-header h4 {
+                        font-size: 1.1rem;
+                    }
+                    
                     .btn-primary {
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        border: none;
-                        border-radius: 10px;
-                        padding: 12px 24px;
-                        font-weight: 600;
+                        padding: 10px 20px;
+                        font-size: 0.9rem;
                     }
-
-                    /* Form Layout */
-                    .form-container {
-                        max-width: 100%;
-                        overflow: visible;
-                    }
-
-                    .form-container .row {
-                        margin: 0 -10px;
-                    }
-
-                    .form-container .col-md-4,
-                    .form-container .col-md-6,
-                    .form-container .col-12 {
-                        padding: 0 10px;
-                    }
-
-                    /* Select2 Custom Styling */
-                    .select2-container--default .select2-selection--single {
-                        height: 45px;
-                        padding: 8px 12px;
-                        border: 2px solid #e9ecef;
-                        border-radius: 10px;
-                        width: 100%;
-                    }
-
-                    .select2-container--default .select2-selection--single .select2-selection__rendered {
-                        line-height: 28px;
-                        color: #495057;
-                    }
-
-                    .select2-container--default .select2-selection--single .select2-selection__arrow {
-                        height: 43px;
-                    }
-
-                    .select2-dropdown {
-                        border: 2px solid #667eea;
-                        border-radius: 10px;
-                    }
-
-                    .select2-container--default .select2-results__option--highlighted[aria-selected] {
-                        background-color: #667eea;
-                    }
-
-                    /* Responsive Design */
-                    @media (max-width: 1200px) {
-                        .dashboard-sidebar {
-                            width: 250px;
-                        }
-                        .dashboard-content {
-                            margin-left: 270px;
-                            width: calc(100% - 270px);
-                        }
-                    }
-
-                    @media (max-width: 992px) {
-                        .dashboard-sidebar {
-                            width: 100%;
-                            height: auto;
-                            position: relative;
-                            top: 0;
-                        }
+                }
+            </style>
+        </head>
+        <body>
+            <!-- Custom Header -->
+            <header class="custom-header d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="/" class="d-flex align-items-center" style="text-decoration: none; color: inherit;">
+                        <!-- Logo Image -->
+                        <!-- <img src="./static/companylogo/ABC_Logo.jpg" alt="ABC Corporation" height="40" style="max-height: 40px; margin-right: 12px;"/> -->
+                        <!-- Text -->
+                        <h4 class="mb-0" style="font-weight: 600;">Advanced ABC Group</h4>
+                    </a>
+                </div>
+                
+                <!-- Manual User Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" 
+                            id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-user me-2"></i>
+                        <span id="userName"><t t-esc="request.env.user.name"/></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuDropdown">
+                        <!-- Show Apps link only for internal users -->
+                        <t t-if="request.env.user.share == False">
+                            <li>
+                                <a class="dropdown-item" href="/web">
+                                    <i class="fa fa-th me-2"></i>Apps
+                                </a>
+                            </li>
+                        </t>
                         
-                        .dashboard-content {
-                            margin-left: 0;
-                            padding: 20px 15px;
-                            width: 100%;
-                        }
+                        <!-- My Account for all users -->
+                        <li>
+                            <a class="dropdown-item" href="/my/home">
+                                <i class="fa fa-cog me-2"></i>My Account
+                            </a>
+                        </li>
                         
-                        .form-container .col-md-4,
-                        .form-container .col-md-6 {
-                            width: 100%;
-                        }
-                    }
-
-                    @media (max-width: 768px) {
-                        .dashboard-content {
-                            padding: 20px;
-                        }
+                        <li><hr class="dropdown-divider"/></li>
                         
-                        .card-header {
-                            padding: 15px;
-                        }
-                        
-                        .section-header {
-                            font-size: 1.1rem;
-                        }
-                        
-                        .form-label {
-                            font-size: 0.9rem;
-                        }
-                    }
-
-                    @media (max-width: 576px) {
-                        .dashboard-content {
-                            padding: 15px 10px;
-                        }
-                        
-                        .card-header h4 {
-                            font-size: 1.1rem;
-                        }
-                        
-                        .btn-primary {
-                            padding: 10px 20px;
-                            font-size: 0.9rem;
-                        }
-                    }
-                </style>
-            </t>
+                        <!-- Logout for all users -->
+                        <li>
+                            <a class="dropdown-item text-danger" href="/web/session/logout">
+                                <i class="fa fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </header>
 
             <div class="container-fluid p-0">
                 <div class="row g-0">
@@ -1005,7 +1268,7 @@
                                         </div>
                                     </div>
 
-                                    <!-- Customer Information -->
+                                   <!-- Customer Information -->
                                     <div class="mb-4">
                                         <h5 class="section-header">Customer Information</h5>
                                         
@@ -1038,22 +1301,28 @@
                                     </div>
 
                                     <!-- Visit Information -->
+                                    <!-- Visit Information -->
                                     <div class="mb-4">
                                         <h5 class="section-header">Visit Information</h5>
-                                        
+
                                         <div class="row mb-3">
                                             <div class="col-md-4">
                                                 <label class="form-label">Visit Date</label>
                                                 <input type="date" name="visit_date" class="form-control"/>
                                             </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Time IN</label>
-                                                <input type="datetime-local" name="time_in_dt" class="form-control"/>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Time Out</label>
-                                                <input type="datetime-local" name="time_out_dt" class="form-control"/>
-                                            </div>
+
+                                            <!-- ✅ SERVICE ONLY -->
+                                            <t t-if="team == 'service'">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Time IN</label>
+                                                    <input type="text" name="time_in_dt" class="form-control"/>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Time Out</label>
+                                                    <input type="text" name="time_out_dt" class="form-control"/>
+                                                </div>
+                                            </t>
                                         </div>
 
                                         <div class="row mb-3">
@@ -1066,8 +1335,21 @@
                                                     </t>
                                                 </select>
                                             </div>
+
+                                            <!-- ✅ WARRANTY ONLY FOR SERVICE -->
+                                            <t t-if="team == 'service'">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Warranty Type</label>
+                                                    <select name="warranty_type" class="form-control">
+                                                        <option value="">-- Select --</option>
+                                                        <option value="with_warranty">With Warranty</option>
+                                                        <option value="without_warranty">Without Warranty</option>
+                                                    </select>
+                                                </div>
+                                            </t>
                                         </div>
                                     </div>
+
 
                                     <!-- Additional Details -->
                                     <div class="mb-4">
@@ -1097,13 +1379,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="row mb-3">
-                                            <div class="col-12">
-                                                <label class="form-label">Tags</label>
-                                                <input type="text" name="tags" class="form-control" 
-                                                    placeholder="Enter tags (comma separated)"/>
-                                            </div>
-                                        </div>
+                                        
                                     </div>
 
                                     <div class="d-flex gap-2 pt-3 border-top">
@@ -1167,209 +1443,131 @@
                 });
             ]]>
             </script>
-        </t>
+        </body>
+        </html>
     </template>
 
-    <!-- Task View Template -->
-    <template id="task_view_template" name="Task View">
-        <t t-call="website.layout">
-            <t t-set="head">
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-                <style>
-                    /* Sidebar Styles - MATCHES DASHBOARD */
-                    .dashboard-sidebar {
-                        position: fixed;
-                        top: 70px;
-                        left: 0;
-                        height: calc(100vh - 70px);
-                        width: 280px;
-                        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
-                        border-right: none;
-                        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
-                        z-index: 1000;
-                        padding-top: 20px;
-                        overflow-y: auto;
-                        transition: all 0.3s ease;
-                    }
-
-                    .dashboard-sidebar .sidebar-header {
-                        padding: 0 25px 20px;
-                        border-bottom: 1px solid rgba(255,255,255,0.1);
-                        margin-bottom: 15px;
-                    }
-
-                    .dashboard-sidebar .sidebar-header h4 {
-                        color: white;
-                        font-weight: 600;
-                        margin: 0;
-                        font-size: 1.2rem;
-                    }
-
-                    .dashboard-sidebar .list-group-item {
-                        border: none;
-                        border-radius: 12px;
-                        padding: 16px 20px;
-                        margin: 4px 15px;
-                        font-weight: 500;
-                        color: rgba(255,255,255,0.9);
-                        background: transparent;
-                        transition: all 0.3s ease;
-                        border-left: 3px solid transparent;
-                        display: flex;
-                        align-items: center;
-                        text-decoration: none;
-                    }
-
-                    .dashboard-sidebar .list-group-item:hover {
-                        background: rgba(255,255,255,0.1);
-                        color: white;
-                        border-left-color: #e74c3c;
-                        transform: translateX(5px);
-                    }
-
-                    .dashboard-sidebar .list-group-item.active {
-                        background: rgba(255,255,255,0.15);
-                        color: white;
-                        border-left-color: #e74c3c;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                    }
-
-                    .dashboard-sidebar .list-group-item i {
-                        width: 20px;
-                        text-align: center;
-                        margin-right: 12px;
-                        font-size: 1.1rem;
-                    }
-
-                    .dashboard-content {
-                        margin-left: 300px;
-                        padding: 30px;
-                        min-height: calc(100vh - 70px);
-                        background: #f8fafc;
-                        width: calc(100% - 300px);
-                        overflow-x: hidden;
-                    }
-
-                    .card {
-                        border: none;
-                        border-radius: 16px;
-                        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
-                        margin-bottom: 25px;
-                        overflow: hidden;
-                        width: 100%;
-                    }
-
-                    .card-header {
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                        border: none;
-                        padding: 20px 25px;
-                        border-radius: 16px 16px 0 0;
-                    }
-
-                    .card-header h4 {
-                        margin: 0;
-                        font-weight: 600;
-                    }
-
-                    @media (max-width: 1200px) {
-                        .dashboard-sidebar {
-                            width: 250px;
-                        }
-                        .dashboard-content {
-                            margin-left: 270px;
-                            width: calc(100% - 270px);
-                        }
-                    }
-
-                    @media (max-width: 992px) {
-                        .dashboard-sidebar {
-                            width: 100%;
-                            height: auto;
-                            position: relative;
-                            top: 0;
-                        }
-                        
-                        .dashboard-content {
-                            margin-left: 0;
-                            padding: 20px 15px;
-                            width: 100%;
-                        }
-                    }
-                </style>
-            </t>
-
-            <div class="container-fluid p-0">
-                <div class="row g-0">
-                    <!-- Sidebar -->
-                    <div class="dashboard-sidebar">
-                        <div class="sidebar-header">
-                            <h4>Sales Management</h4>
+    <!-- Task View Modal Template -->
+    <template id="task_modal_view_template" name="Task Modal View Details">
+        <div class="task-modal-view-content">
+            <t t-if="task">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="section-header">Basic Information</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Task Title</label>
+                            <p class="form-control-plaintext fs-5" t-esc="task.task_title"/>
                         </div>
-                        <div class="list-group">
-                            <!-- Dashboard - Always visible -->
-                            <a href="/sales_management" class="list-group-item list-group-item-action">
-                                <i class="fa fa-tachometer-alt me-2"></i> Dashboard
-                            </a>
-                            
-                            <!-- Sales Portal - Conditionally visible -->
-                            <t t-if="use_sales_portal">
-                                <a href="/sales_management/sales" class="list-group-item list-group-item-action">
-                                    <i class="fa fa-briefcase me-2"></i> Sales
-                                </a>
-                            </t>
-                            
-                            <!-- Service Portal - Conditionally visible -->
-                            <t t-if="use_service_portal">
-                                <a href="/sales_management/service" class="list-group-item list-group-item-action">
-                                    <i class="fa fa-concierge-bell me-2"></i> Service
-                                </a>
-                            </t>
-                            
-                            <!-- Contacts Portal - Conditionally visible -->
-                            <t t-if="use_contact_portal">
-                                <a href="/sales_management/contacts" class="list-group-item list-group-item-action">
-                                    <i class="fa fa-users me-2"></i> Contacts
-                                </a>
-                            </t>
-                            
-                            <!-- Quotation Portal - Conditionally visible -->
-                            <t t-if="use_quotation_portal">
-                                <a href="/sales_management/quotation" class="list-group-item list-group-item-action">
-                                    <i class="fa fa-file-invoice-dollar me-2"></i> Quotation
-                                </a>
-                            </t>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Task Team</label>
+                            <p class="form-control-plaintext">
+                                <span class="badge bg-primary">
+                                    <t t-esc="task.task_team == 'sales' and 'Sales' or 'Service'"/>
+                                </span>
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Employee</label>
+                            <p class="form-control-plaintext" t-esc="task.employee_id.name or '-'"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Designation</label>
+                            <p class="form-control-plaintext" t-esc="task.employee_id.job_title or '-'"/>
                         </div>
                     </div>
-
-                    <!-- Main Content -->
-                    <div class="dashboard-content">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div>
-                                <h2 class="mb-1">Task Details</h2>
-                                <p class="text-muted mb-0">View task information</p>
-                            </div>
-                            <a href="/sales_management" class="btn btn-secondary">
-                                <i class="fa fa-arrow-left me-2"></i>Back to Dashboard
-                            </a>
+                    <div class="col-md-6">
+                        <h5 class="section-header">Customer Information</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Customer</label>
+                            <p class="form-control-plaintext" t-esc="task.customer_id.name or '-'"/>
                         </div>
-
-                        <div class="card">
-                            <div class="card-body">
-                                <h4><t t-esc="task.task_title"/></h4>
-
-                                <p><strong>Team: </strong>
-                                    <t t-esc="task.task_team == 'sales' and 'Sales' or 'Service'"/>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Company</label>
+                            <p class="form-control-plaintext" t-esc="task.company_id.name or '-'"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Customer Designation</label>
+                            <p class="form-control-plaintext" t-esc="task.customer_id.function or '-'"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5 class="section-header">Visit Information</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Visit Date</label>
+                            <p class="form-control-plaintext" t-esc="task.visit_date or '-'"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Purpose</label>
+                            <p class="form-control-plaintext" t-esc="task.purpose_id.name or '-'"/>
+                        </div>
+                        
+                        <!-- SERVICE ONLY -->
+                        <t t-if="task.task_team == 'service'">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Time IN</label>
+                                <p class="form-control-plaintext" t-esc="task.time_in_dt or '-'"/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Time OUT</label>
+                                <p class="form-control-plaintext" t-esc="task.time_out_dt or '-'"/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Warranty Type</label>
+                                <p class="form-control-plaintext">
+                                    <span t-if="task.warranty_type == 'with_warranty'" class="badge bg-success">With Warranty</span>
+                                    <span t-elif="task.warranty_type == 'without_warranty'" class="badge bg-warning">Without Warranty</span>
+                                    <span t-else="" class="text-muted">-</span>
                                 </p>
-
-                                <p><strong>Remarks: </strong><t t-esc="task.remarks or ''"/></p>
+                            </div>
+                        </t>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5 class="section-header">Additional Details</h5>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Analyzer</label>
+                            <p class="form-control-plaintext" t-esc="task.analyzer or '-'"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Reagents</label>
+                            <p class="form-control-plaintext">
+                                <t t-if="task.reagents">
+                                    <span t-esc="task.reagents"/>
+                                </t>
+                                <t t-else="">
+                                    -
+                                </t>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5 class="section-header">Remarks</h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <t t-if="task.remarks">
+                                    <p class="mb-0" t-esc="task.remarks"/>
+                                </t>
+                                <t t-else="">
+                                    <p class="mb-0 text-muted">No remarks provided</p>
+                                </t>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </t>
+            </t>
+            <t t-else="">
+                <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle me-2"></i>
+                    Task not found or you don't have permission to view this task.
+                </div>
+            </t>
+        </div>
     </template>
 
 </odoo>

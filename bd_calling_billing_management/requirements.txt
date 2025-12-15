@@ -1,0 +1,6 @@
+# requirements.txt
+pdf2docx>=0.5.8
+python-docx>=0.8.11
+Pillow>=10.1.0
+pymupdf>=1.23.8
+reportlab>=4.0.0

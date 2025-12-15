@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lc_order,lc.order,model_lc_order,base.group_user,1,1,1,1
+access_lc_order_line,lc.order.line,model_lc_order_line,base.group_user,1,1,1,1
+access_lc_payment_term,lc.payment.term,model_lc_payment_term,base.group_user,1,1,1,1
+access_lc_payment_term_line,lc.payment.term.line,model_lc_payment_term_line,base.group_user,1,1,1,1
+access_lc_payment_term_description_user,lc.payment.term.description.user,model_lc_payment_term_description,base.group_user,1,0,0,0
+access_lc_payment_term_description_purchase_user,lc.payment.term.description.purchase.user,model_lc_payment_term_description,purchase.group_purchase_user,1,1,1,0

@@ -53,13 +53,19 @@ class TaskManagement(models.Model):
     # Date field
     visit_date = fields.Date(string="Visit Date", default=fields.Date.context_today)
     
-    # Time fields (stored as Datetime to show AM/PM)
-    time_in_dt = fields.Datetime(string="Time IN")
-    time_out_dt = fields.Datetime(string="Time Out")
+    # Time fields (changed to Text for manual entry)
+    time_in_dt = fields.Char(string="Time IN")
+    time_out_dt = fields.Char(string="Time Out")
     
     # Text fields
     tags = fields.Text(string="Tags")
     purpose_id = fields.Many2one('task.purpose', string="Purpose")
+    
+    # Warranty Type field
+    warranty_type = fields.Selection(
+        [('with_warranty', 'With Warranty'), ('without_warranty', 'Without Warranty')],
+        string="Warranty Type"
+    )
 
     # -----------------------------
     # FIX 1: Compute employee fields

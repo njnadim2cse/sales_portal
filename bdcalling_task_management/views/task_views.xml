@@ -12,12 +12,13 @@
                 <field name="employee_id"/>
                 <field name="customer_id"/>
                 <field name="visit_date"/>
-                <field name="time_in_dt"/>
-                <field name="time_out_dt"/>
+                <field name="time_in_dt" optional="hide" column_invisible="[('task_team', '=', 'sales')]"/>
+                <field name="time_out_dt" optional="hide" column_invisible="[('task_team', '=', 'sales')]"/>
+                <field name="warranty_type" optional="hide" column_invisible="[('task_team', '=', 'sales')]"/>
+                <field name="purpose_id"/>
             </list>
         </field>
     </record>
-
     <!-- FORM VIEW -->
     <record id="view_task_management_form" model="ir.ui.view">
         <field name="name">task.management.form</field>
@@ -49,11 +50,12 @@
                     <group string="Visit Information">
                         <group>
                             <field name="visit_date"/>
-                            <field name="time_in_dt" widget="datetime"/>
-                            <field name="time_out_dt" widget="datetime"/>
+                            <field name="time_in_dt" placeholder="e.g., 09:00 AM" invisible="task_team == 'sales'"/>
+                            <field name="time_out_dt" placeholder="e.g., 05:00 PM" invisible="task_team == 'sales'"/>
                         </group>
                         <group>
                             <field name="purpose_id"/>
+                            <field name="warranty_type" invisible="task_team == 'sales'"/>
                         </group>
                     </group>
 
@@ -84,15 +86,19 @@
                 <field name="customer_id"/>
                 <field name="visit_date"/>
                 <field name="purpose_id"/>
+                <field name="warranty_type"/>
                 
                 <filter name="filter_sales" string="Sales" domain="[('task_team','=','sales')]"/>
                 <filter name="filter_service" string="Service" domain="[('task_team','=','service')]"/>
                 <filter name="filter_today" string="Today" domain="[('visit_date','=',context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_with_warranty" string="With Warranty" domain="[('warranty_type','=','with_warranty')]"/>
+                <filter name="filter_without_warranty" string="Without Warranty" domain="[('warranty_type','=','without_warranty')]"/>
                 
                 <filter name="group_employee" string="Employee" context="{'group_by':'employee_id'}"/>
                 <filter name="group_customer" string="Customer" context="{'group_by':'customer_id'}"/>
                 <filter name="group_visit_date" string="Visit Date" context="{'group_by':'visit_date'}"/>
                 <filter name="group_purpose" string="Purpose" context="{'group_by':'purpose_id'}"/>
+                <filter name="group_warranty" string="Warranty Type" context="{'group_by':'warranty_type'}"/>
             </search>
         </field>
     </record>

@@ -23,7 +23,7 @@
         'views/res_user_views.xml',
         'views/res_partner_views.xml',
         'views/task_portal.xml',
-        'views/portal_backend_form_wrapper.xml',
+        # 'views/portal_backend_form_wrapper.xml',
         'views/contact_portal.xml',
         'views/quotation_portal.xml',
         'views/dashboard_main.xml',

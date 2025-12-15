@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_purchase_order_form_inherit_category" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.category</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- Add category field in tree view -->
+            <xpath expr="//field[@name='product_id']" position="before">
+                <field name="product_category_id" 
+                       options="{'no_create': True, 'no_open': True}" 
+                       optional="show"/>
+            </xpath>
+            
+            <!-- Add domain to product_id -->
+            <xpath expr="//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('purchase_ok', '=', True), ('categ_id', '=', product_category_id)] if product_category_id else [('purchase_ok', '=', True)]</attribute>
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>

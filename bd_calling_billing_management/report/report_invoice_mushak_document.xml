@@ -1,0 +1,190 @@
+<odoo>
+    <!-- Define custom header template -->
+    <template id="report_invoice_mushak_header">
+        <div class="header" style="text-align:center; padding: 10px 20px 15px; border-bottom: 2px solid black; margin-bottom: 0; font-family: Arial, sans-serif;">
+            <h3 style="margin: 3px 0; font-size: 16px; font-weight: bold;">গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</h3>
+            <h4 style="margin: 3px 0; font-size: 16px;  font-weight: bold;">জাতীয় রাজস্ব বোর্ড</h4>
+            <h4 style="margin: 3px 0; font-size: 16px; font-weight: bold;">কর চালানপত্র</h4>
+            <h4 style="margin: 3px 0; font-size: 15px; font-weight: bold;">[ বিধি ৪০ এর উপ-বিধি (১) এর দফা (গ) ও দফা (চ) অনুযায়ী ]</h4>
+            
+            <div style="margin-top:10px; font-size:15px; line-height:1.4;">
+                <div><strong>নির্ধারিত ব্যক্তির নাম:</strong> <span t-field="company.name"/></div>
+                <div><strong>নির্ধারিত ব্যক্তির বিজিআইআর:</strong> <span t-field="company.vat"/></div>
+                <div><strong>চালানপত্র ইস্যু ঠিকানা:</strong> 
+                    <span t-field="company.street"/>, 
+                    <span t-field="company.city"/>, 
+                    <span t-field="company.country_id.name"/>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Main document template -->
+    <template id="report_invoice_mushak_document">
+        <t t-foreach="docs" t-as="doc">
+            <t t-call="web.html_container">
+                <div class="article" t-att-data-oe-model="doc._name" t-att-data-oe-id="doc.id" style="font-family: Arial, sans-serif;">
+                    <!-- Call custom header -->
+                    <t t-set="company" t-value="doc.company_id"/>
+                    <t t-call="bd_calling_billing_management.report_invoice_mushak_header"/>
+                    
+                    <div class="page" style="padding-top: 15px;">
+                        <!-- COMPANY + BUYER INFO -->
+                        <div class='d-flex' style=" width:100%; font-size:13x; margin-bottom:10px;">
+
+                                <div style="width:53%; padding-right:15px;">
+                                    <div><strong>ক্রেতার নাম:</strong>
+                                        <span t-field="doc.partner_id.name"/>
+                                    </div>
+
+                                    <div><strong>ক্রেতার বিআইএন / NID:</strong>
+                                        <span t-field="doc.partner_id.vat"/>
+                                    </div>
+
+                                    <div><strong>সরবরাহের গ্রাহক ঠিকানা:</strong>
+                                        <span t-field="doc.partner_id.street"/>,
+                                        <span t-field="doc.partner_id.city"/>
+                                    </div>
+                                </div>
+
+                                <div style="width:50%; padding-left:15px;">
+                                    <div><strong>চালানপত্র নং:</strong>
+                                        <span t-field="doc.name"/>
+                                    </div>
+
+                                    <div><strong>ইস্যুর তারিখ:</strong>
+                                        <span t-field="doc.invoice_date"/>
+                                    </div>
+                                    
+
+                                    <div><strong>ইস্যুর সময়:</strong>
+                                        <t t-esc="datetime.datetime.now().strftime('%I:%M %p')"/>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        <!-- PRODUCT TABLE -->
+                        <table style="width:100%; border-collapse:collapse; font-size:14px; margin-top:10px; border: 1px solid black;">
+                            <thead>
+                                <tr style="background:#f2f2f2;">
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">ক্রমিক</th>
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">পণ্য বা সেবার বর্ণনা</th>
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">সরবরাহের একক</th>
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">পরিমাণ</th>
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">একক মূল্য</th>
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">মোট মূল্য</th>
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">সম্পূরক শুল্ক (%)</th>
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">সম্পূরক শুল্ক (টাকা)</th>
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">মূল্য সংযোজন কর (%)</th>
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">মূল্য সংযোজন কর (টাকা)</th>
+                                    <th style="padding:6px; border:1px solid black; text-align:center; font-weight:bold;">মোট মূল্য (টাকায়)</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <t t-set="counter" t-value="1"/>
+                                <t t-set="total_vat" t-value="0"/>
+                                
+                                <t t-foreach="doc.invoice_line_ids" t-as="line">
+                                    <t t-set="vat_amount" t-value="line.price_total - line.price_subtotal"/>
+                                    <t t-set="total_vat" t-value="total_vat + vat_amount"/>
+                                    
+                                    <tr>
+                                        <td style="padding:5px; border:1px solid black; text-align:center; vertical-align:middle;">
+                                            <t t-esc="counter"/>
+                                        </td>
+                                        <td style="padding:5px; border:1px solid black; text-align:left; vertical-align:middle;">
+                                            <span t-field="line.name"/>
+                                        </td>
+                                        <td style="padding:5px; border:1px solid black; text-align:center; vertical-align:middle;">
+                                            <span t-field="line.product_uom_id.name"/>
+                                        </td>
+                                        <td style="padding:5px; border:1px solid black; text-align:center; vertical-align:middle;">
+                                            <t t-esc="line.quantity"/>
+                                        </td>
+                                        <td style="padding:5px; border:1px solid black; text-align:right; vertical-align:middle;">
+                                            <t t-esc="line.price_unit"/>
+                                        </td>
+                                        <td style="padding:5px; border:1px solid black; text-align:right; vertical-align:middle;">
+                                            <t t-esc="line.price_subtotal"/>
+                                        </td>
+                                        <td style="padding:5px; border:1px solid black; text-align:center; vertical-align:middle;">0%</td>
+                                        <td style="padding:5px; border:1px solid black; text-align:right; vertical-align:middle;">0.00</td>
+                                        <td style="padding:5px; border:1px solid black; text-align:center; vertical-align:middle;">
+                                            <t t-foreach="line.tax_ids" t-as="tax">
+                                                <t t-esc="tax.amount"/>%
+                                            </t>
+                                            <t t-if="not line.tax_ids">0%</t>
+                                        </td>
+                                        <td style="padding:5px; border:1px solid black; text-align:right; vertical-align:middle;">
+                                            <t t-esc="vat_amount"/>
+                                        </td>
+                                        <td style="padding:5px; border:1px solid black; text-align:right; vertical-align:middle;">
+                                            <t t-esc="line.price_total"/>
+                                        </td>
+                                    </tr>
+                                    <t t-set="counter" t-value="counter + 1"/>
+                                </t>
+                                
+                                <!-- Empty rows for minimum height - Use empty string or CSS min-height -->
+                                <t t-set="remaining_rows" t-value="max(0, 10 - len(doc.invoice_line_ids))"/>
+                                <t t-foreach="range(remaining_rows)" t-as="empty_row">
+                                    <tr style="height:45px;">
+                                        <td style="border:1px solid black;"></td>
+                                        <td style="border:1px solid black;"></td>
+                                        <td style="border:1px solid black;"></td>
+                                        <td style="border:1px solid black;"></td>
+                                        <td style="border:1px solid black;"></td>
+                                        <td style="border:1px solid black;"></td>
+                                        <td style="border:1px solid black;"></td>
+                                        <td style="border:1px solid black;"></td>
+                                        <td style="border:1px solid black;"></td>
+                                        <td style="border:1px solid black;"></td>
+                                        <td style="border:1px solid black;"></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            
+                            <!-- TOTALS ROW -->
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" style="padding:6px; border:1px solid black; text-align:right; font-weight:bold;">
+                                        সর্বমোট:
+                                    </td>
+                                    <td style="padding:6px; border:1px solid black; text-align:right; font-weight:bold;">
+                                        <t t-esc="doc.amount_untaxed"/>
+                                    </td>
+                                    <td style="border:1px solid black;"></td>
+                                    <td style="border:1px solid black;"></td>
+                                    <td style="border:1px solid black;"></td>
+                                    <td style="padding:6px; border:1px solid black; text-align:right; font-weight:bold;">
+                                        <t t-esc="doc.amount_tax"/>
+                                    </td>
+                                    <td style="padding:6px; border:1px solid black; text-align:right; font-weight:bold;">
+                                        <t t-esc="doc.amount_total"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- SIGNATURES -->
+                        <div style="margin-top:20px; padding-top:12px; border-top:2px solid black; font-size:14px; line-height:1.5;">
+                            <div><strong>প্রতিষ্ঠান কর্তৃপক্ষের দায়িত্বপ্রাপ্ত ব্যক্তির নাম:</strong></div>
+                            <div><strong>পদবি:</strong></div>
+                            <div><strong>স্বাক্ষর:</strong></div>
+                            <div><strong>সাল:</strong></div>
+
+                            <div style="margin:8px 0;">
+                                উপরের কর্তৃপক্ষের সরবরাহকৃত করপত্র অনুযায়ী কর চালানপত্র ও উপরে কর কর্তন সম্পন্ন হিসাবে নির্ধারিত হবে এবং উক্ত উর্ধ্বোক্ত কর কর্তনকৃত সরবরাহকৃত করপত্র অনুযায়ী প্রয়োগ করা হবে।
+                            </div>
+
+                            <div><strong>মোট কর:</strong> <t t-esc="doc.amount_tax"/></div>
+                            <div><em>সকল প্রকার কর বাদিত মূল্য</em></div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

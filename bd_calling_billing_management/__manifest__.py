@@ -15,7 +15,7 @@
         'views/product_views.xml',
         'views/pricelist_views.xml',
         'views/sale_views.xml',
-        'views/sale_order_report_views.xml',
+        # 'views/sale_order_report_views.xml',
         'views/account_move_views.xml',
         # 'views/ir_actions_report_views.xml',
         # 'views/invoice_action_menu.xml',
@@ -24,6 +24,7 @@
         'report/report_with_test.xml',
         'report/invoice_with_test_pdf.xml',
         'report/invoice_without_test_docx.xml',
+        'report/report_invoice_mushak_document.xml'
          
         # 'views/report_templates.xml',
     ],
@@ -31,6 +32,15 @@
         'web.assets_backend': [
             'static/src/js/docx_report_handler.js',
         ],
+    },
+    'external_dependencies': {
+        'python3': [
+            'pdf2docx',
+            'python-docx',
+            'Pillow',
+            'pymupdf',
+            'reportlab',       # Pillow package
+        ]
     },
     'installable': True,
     'application': True,
